@@ -1,7 +1,11 @@
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  if(req.method === 'OPTIONS') return res.status(200).end();
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   
+  if(req.method === 'OPTIONS') return res.status(200).end();
+  if(req.method !== 'POST') return res.status(405).end();
+
   const { cvText, keywords, city, umkreis } = req.body || {};
 
   let realJobs = [];
@@ -24,7 +28,7 @@ export default async function handler(req, res) {
       salary: '',
       url: j.refnr ? `https://www.arbeitsagentur.de/jobsuche/jobdetail/${j.refnr}` : ''
     }));
-  } catch(e) {}
+  } catch(e) { console.error('Bundesagentur error:', e); }
 
   let profile = { name: 'Bewerber/in', mainRole: 'Fachkraft Gesundheitswesen', skills: ['Gesundheitswesen'], languages: ['Deutsch'] };
   try {
@@ -34,15 +38,13 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         max_tokens: 300,
-        messages: [{ role: 'user', content: `Extrahiere aus diesem Lebenslauf NUR ein JSON Profil:
-${(cvText||'').substring(0,1500)}
-Antworte NUR mit: {"name":"Name","mainRole":"Rolle","skills":["s1","s2","s3"],"languages":["l1","l2"]}` }],
+        messages: [{ role: 'user', content: `Extrahiere aus diesem Lebenslauf NUR ein JSON Profil:\n${(cvText||'').substring(0,1500)}\nAntworte NUR mit: {"name":"Name","mainRole":"Rolle","skills":["s1","s2","s3"],"languages":["l1","l2"]}` }],
         response_format: { type: 'json_object' }
       })
     });
     const d = await groqRes.json();
     profile = JSON.parse(d.choices[0].message.content);
-  } catch(e) {}
+  } catch(e) { console.error('Groq error:', e); }
 
   return res.status(200).json({ profile, jobs: realJobs });
 }
