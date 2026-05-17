@@ -828,7 +828,35 @@ footer{background:var(--navy);color:rgba(255,255,255,.55);padding:1.8rem 3rem;di
         <span>Ich stimme der Verarbeitung meiner Qualifikationsdaten für das KI-Matching zu. <a onclick="openModal('dsgvoModal')">Datenschutzerklärung</a></span>
       </label>
 
-      <button class="btn-primary" id="analyzeBtn" disabled onclick="startAnalysis()" style="margin-top:1.3rem">✦ KI-Analyse starten</button>
+      <button class="btn-primary" id="analyzeBtn" disabled onclick="setUpStep(2)" style="margin-top:1.3rem">✦ Weiter → Standort wählen</button>
+    </div>
+
+
+    <!-- PANEL 1b — STANDORT -->
+    <div class="panel" id="up1b">
+      <div class="panel-tag">Schritt 3 von 5</div>
+      <div class="panel-title">Wo möchten Sie arbeiten?</div>
+      <p class="panel-sub">Geben Sie Ihren Standort an — für präzisere Ergebnisse.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem">
+        <div>
+          <label style="font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--teal);display:block;margin-bottom:.4rem">Stadt</label>
+          <input id="cityInput" type="text" placeholder="z.B. Stuttgart, Ulm..." style="width:100%;padding:.75rem 1rem;border:1.5px solid rgba(27,79,114,.15);border-radius:12px;font-family:DM Sans,sans-serif;font-size:.9rem;outline:none;background:var(--cream)">
+        </div>
+        <div>
+          <label style="font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--teal);display:block;margin-bottom:.4rem">Umkreis</label>
+          <select id="umkreisSelect" style="width:100%;padding:.75rem 1rem;border:1.5px solid rgba(27,79,114,.15);border-radius:12px;font-family:DM Sans,sans-serif;font-size:.9rem;outline:none;background:var(--cream);cursor:pointer">
+            <option value="25">25 km</option>
+            <option value="50" selected>50 km</option>
+            <option value="100">100 km</option>
+            <option value="200">200 km</option>
+            <option value="">Deutschlandweit</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:flex;gap:.8rem">
+        <button class="btn-secondary" onclick="setUpStep(1)">← Zurück</button>
+        <button class="btn-primary" onclick="startAnalysis()" style="flex:1;justify-content:center">✦ Jetzt Matches finden</button>
+      </div>
     </div>
 
     <!-- PANEL 2 LOADING -->
