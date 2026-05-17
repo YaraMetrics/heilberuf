@@ -1043,21 +1043,9 @@ function goToUpload() {
 }
 
 function setUpStep(n){
-  [-1,0,1,2,3].forEach(i=>{
-    const el = document.getElementById('up'+(i<0?0:i===0?0:i));
-  });
-  // Show correct panel
-  ['up0','up1','up2','up3'].forEach((id,i) => {
+  ['up0','up1','up1b','up2','up3'].forEach((id,i) => {
     const el = document.getElementById(id);
     if(el) el.classList.toggle('active', i === n);
-  });
-  // Update dots
-  const dots = ['dc0','dc1','dc2','dc3'];
-  dots.forEach((id,i) => {
-    const d = document.getElementById(id);
-    if(!d) return;
-    d.className = 'dot-circ' + (i < n ? ' done' : i === n ? ' active' : '');
-    d.textContent = i < n ? '✓' : i+1;
   });
   STATE.uploadStep = n;
 }
