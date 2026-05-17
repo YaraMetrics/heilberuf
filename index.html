@@ -1110,7 +1110,7 @@ function animateLoading(){
 
 async function fetchJobsFromBundesagentur(keywords){
   try {
-    const res = await fetch('/.netlify/functions/jobsuche', {
+    const res = await fetch('/api/jobsuche', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({ berufsfeld: keywords, umkreis: 200 })
@@ -1138,7 +1138,7 @@ async function fetchAIMatches(){
      cvText.includes('Arzt') || cvText.includes('Ärztin') ? 'Arzt Ärztin' :
      'Gesundheitswesen');
   try {
-    const res = await fetch('/.netlify/functions/matching', {
+    const res = await fetch('/api/matching', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({ cvText: cvContent, keywords })
