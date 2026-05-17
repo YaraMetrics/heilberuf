@@ -828,7 +828,7 @@ footer{background:var(--navy);color:rgba(255,255,255,.55);padding:1.8rem 3rem;di
         <span>Ich stimme der Verarbeitung meiner Qualifikationsdaten für das KI-Matching zu. <a onclick="openModal('dsgvoModal')">Datenschutzerklärung</a></span>
       </label>
 
-      <button class="btn-primary" id="analyzeBtn" disabled onclick="setUpStep(2)" style="margin-top:1.3rem">✦ Weiter → Standort wählen</button>
+      <button class="btn-primary" id="analyzeBtn" disabled onclick="goToLocation()" style="margin-top:1.3rem">✦ Weiter → Standort wählen</button>
     </div>
 
 
@@ -1031,6 +1031,10 @@ function selectBerufsfeld(type, card) {
     r.addEventListener('change', () => { selectedKeywords = r.value; });
   });
   document.getElementById('bfNextBtn').disabled = false;
+}
+
+function goToLocation() {
+  setUpStep(2);
 }
 
 function goToUpload() {
