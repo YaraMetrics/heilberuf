@@ -1118,15 +1118,7 @@ function checkReady(){
   document.getElementById('analyzeBtn').disabled=!(fileLoaded&&document.getElementById('consentChk').checked);
 }
 
-function setUpStep(n){
-  [1,2,3].forEach(i=>{
-    document.getElementById('up'+i).classList.toggle('active',i===n);
-    const d=document.getElementById('dc'+i);
-    d.className='dot-circ'+(i<n?' done':i===n?' active':'');
-    d.textContent=i<n?'✓':i;
-  });
-  STATE.uploadStep=n;
-}
+
 
 async function startAnalysis(){
   setUpStep(2);
