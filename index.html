@@ -1172,7 +1172,12 @@ async function fetchAIMatches(){
     const res = await fetch('/api/matching', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ cvText: cvContent, keywords })
+      body: JSON.stringify({ 
+        cvText: cvContent, 
+        keywords,
+        city: document.getElementById('cityInput')?.value?.trim() || '',
+        umkreis: document.getElementById('umkreisSelect')?.value || '50'
+      })
     });
     const result = await res.json();
     if(result.profile && result.jobs) {
