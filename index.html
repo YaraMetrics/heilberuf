@@ -1295,6 +1295,28 @@ function buildSwipeCard(job,cls){
   return div;
 }
 
+async function loadRealJobsForSwipe(keywords='Gesundheitswesen', city=''){
+  try{
+    const res=await fetch('/api/matching',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({cvText:'Pflegefachkraft Data Analyst Gesundheitswesen',keywords,city,umkreis:'100'})
+    });
+    const data=await res.json();
+    if(data&&data.jobs&&data.jobs.length>0){
+      STATE.realJobs=data.jobs.map((j,i)=>({
+        id:100+i,org:j.org,city:j.location||city||'Deutschland',
+        icon:'🏥',contract:j.contract||'Vollzeit',salary:'',
+        title:j.title,tags:j.tags||['Gesundheitswesen'],
+        score:j.matchScore||80,
+        reasons:j.reasons||['Aktuelle Stelle','Direkt bewerben möglich'],
+        url:j.url||''
+      }));
+      STATE.cardIndex=0;
+      renderSwipeCards();
+    }
+  }catch(e){}
+}
+
 function renderSwipeCards(){
   const stack=document.getElementById('sStack');
   stack.innerHTML='';
