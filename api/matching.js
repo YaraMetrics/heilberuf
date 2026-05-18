@@ -13,7 +13,7 @@ export default async function handler(req, res) {
   for(const kw of searches) {
     if(realJobs.length >= 4) break;
     try {
-      let url = `https://rest.arbeitsagentur.de/jobboerse/jobsuche-service/pc/v4/jobs?was=${encodeURIComponent(kw)}&size=6`;
+      let url = `https://rest.arbeitsagentur.de/jobboerse/jobsuche-service/pc/v4/jobs?was=${encodeURIComponent(kw)}&size=10`;
       if(city) url += `&wo=${encodeURIComponent(city)}`;
       if(umkreis) url += `&umkreis=${umkreis}`;
       const r = await fetch(url, { headers: { 'X-API-Key': 'jobboerse-jobsuche' } });
@@ -31,7 +31,7 @@ export default async function handler(req, res) {
         salary: '',
         url: j.refnr ? `https://www.arbeitsagentur.de/jobsuche/jobdetail/${j.refnr}` : ''
       }));
-      realJobs = [...realJobs, ...jobs].slice(0, 6);
+      realJobs = [...realJobs, ...jobs].slice(0, 10);
     } catch(e) {}
   }
 
