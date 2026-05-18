@@ -1526,11 +1526,8 @@ function toggleBerufsfeld(type, card, keywords){
   document.getElementById('bfNextBtn').disabled = selectedFields.size === 0;
 }
 function goToUpload(){
-  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('up0').classList.remove('active');
   document.getElementById('up1').classList.add('active');
-  // Update dots
-  document.getElementById('dc0').className='sp-dot done'; document.getElementById('dc0').textContent='✓';
-  document.getElementById('dc1').className='sp-dot active';
   window.scrollTo(0,0);
 }
 </script>
