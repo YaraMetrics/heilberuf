@@ -1545,3 +1545,14 @@ function goToUpload(){
   setUpStep(1);
 }
 </script>
+<script>
+// Override goToUpload with debug
+function goToUpload(){
+  console.log('goToUpload called');
+  const up0 = document.getElementById('up0');
+  const up1 = document.getElementById('up1');
+  if(up0) up0.classList.remove('active');
+  if(up1) up1.classList.add('active');
+  console.log('up1 active:', up1?.classList.contains('active'));
+}
+</script>
