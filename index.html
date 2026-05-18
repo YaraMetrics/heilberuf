@@ -1030,7 +1030,7 @@ function goToLocation() {
   setUpStep(2);
 }
 
-// goToUpload moved below
+
 
 function setUpStep(n){
   ['up0','up1','up1b','up2','up3'].forEach((id,i) => {
@@ -1509,23 +1509,9 @@ init();
 renderSwipeCards();
 loadCandidates();
 </script>
-</body>
-</html>
-/* force Mon May 18 20:16:51 CEST 2026 */
-<style>
-.bf-grid{display:grid;gap:.75rem;margin-bottom:1.5rem}
-.bf-card{border:1.5px solid rgba(13,27,42,.1);border-radius:20px;padding:1.3rem 1.5rem;cursor:pointer;transition:all .25s;background:white}
-.bf-card:hover,.bf-card.selected{border-color:#0ea89a;background:rgba(14,168,154,.05)}
-.bf-top{display:flex;align-items:center;gap:.9rem;margin-bottom:.6rem}
-.bf-icon-wrap{width:42px;height:42px;border-radius:12px;background:rgba(14,168,154,.1);display:flex;align-items:center;justify-content:center;font-size:1.2rem}
-.bf-title{font-size:.95rem;font-weight:700;color:#0d1b2a}
-.bf-sub{font-size:.8rem;color:#5a7080;margin-top:.1rem}
-.sub-options{display:flex;flex-wrap:wrap;gap:.4rem;padding-top:.7rem;border-top:1px solid rgba(13,27,42,.07);margin-top:.4rem}
-.sub-opt{display:flex;align-items:center;gap:.35rem;font-size:.77rem;color:#5a7080;cursor:pointer;padding:.2rem .5rem;border-radius:20px}
-.sub-opt:hover{background:rgba(14,168,154,.08);color:#0ea89a}
-.sub-opt input{accent-color:#0ea89a;width:13px;height:13px}
-</style>
+
 <script>
+// Multi-select berufsfeld
 const selectedFields = new Map();
 function toggleBerufsfeld(type, card, keywords){
   if(selectedFields.has(type)){
@@ -1539,20 +1525,9 @@ function toggleBerufsfeld(type, card, keywords){
   selectedBerufsfeld = Array.from(selectedFields.keys()).join(',');
   document.getElementById('bfNextBtn').disabled = selectedFields.size === 0;
 }
-</script>
-<script>
 function goToUpload(){
   setUpStep(1);
 }
 </script>
-<script>
-// Override goToUpload with debug
-function goToUpload(){
-  console.log('goToUpload called');
-  const up0 = document.getElementById('up0');
-  const up1 = document.getElementById('up1');
-  if(up0) up0.classList.remove('active');
-  if(up1) up1.classList.add('active');
-  console.log('up1 active:', up1?.classList.contains('active'));
-}
-</script>
+</body>
+</html>
