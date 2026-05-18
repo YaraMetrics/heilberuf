@@ -1526,7 +1526,10 @@ function toggleBerufsfeld(type, card, keywords){
   document.getElementById('bfNextBtn').disabled = selectedFields.size === 0;
 }
 function goToUpload(){
-  setUpStep(1);
+  ['up0','up1','up1b','up2','up3'].forEach((id,i) => {
+    const el = document.getElementById(id);
+    if(el) el.classList.toggle('active', i === 1);
+  });
 }
 </script>
 </body>
