@@ -528,6 +528,15 @@ footer{background:var(--navy);color:rgba(255,255,255,.55);padding:1.8rem 3rem;di
 .user-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--navy),var(--teal));display:flex;align-items:center;justify-content:center;color:white;font-size:.8rem;font-weight:700}
 .logout-btn{font-size:.78rem;font-weight:600;color:var(--muted);background:none;border:none;cursor:pointer;padding:.3rem .7rem;border-radius:20px;transition:all .2s}
 .logout-btn:hover{background:rgba(232,80,91,.08);color:var(--nope)}
+.bf-check{
+  position:absolute;top:.9rem;right:.9rem;
+  width:22px;height:22px;border-radius:50%;
+  background:#0ea89a;color:white;
+  display:none;align-items:center;justify-content:center;
+  font-size:.75rem;font-weight:700;
+}
+.bf-card{position:relative}
+.bf-card.selected .bf-check{display:flex}
 </style>
 </head>
 <body>
@@ -763,17 +772,21 @@ footer{background:var(--navy);color:rgba(255,255,255,.55);padding:1.8rem 3rem;di
       <div class="panel-title">Was suchen Sie?</div>
       <p class="panel-sub">Wählen Sie Ihren Bereich — für präzisere Ergebnisse aus der Bundesagentur.</p>
       <div class="berufsfeld-grid">
-        <div class="bf-card" id="bf-pflege" onclick="selectBerufsfeld('pflege',this,'Krankenpflege Altenpflege')">
+        <div class="bf-card" id="bf-pflege" onclick="toggleBerufsfeld('pflege',this,'Krankenpflege Altenpflege')">
           <div class="bf-top"><div class="bf-icon-wrap">🏥</div><div><div class="bf-title">Pflege & Betreuung</div><div class="bf-sub">Krankenpflege, Altenpflege, Ambulante Pflege</div></div></div>
+          <div class="bf-check">✓</div>
         </div>
-        <div class="bf-card" id="bf-medizin" onclick="selectBerufsfeld('medizin',this,'Arzt Ärztin Physiotherapie Psychologie')">
+        <div class="bf-card" id="bf-medizin" onclick="toggleBerufsfeld('medizin',this,'Arzt Ärztin Physiotherapie Psychologie')">
           <div class="bf-top"><div class="bf-icon-wrap">🩺</div><div><div class="bf-title">Medizin & Therapie</div><div class="bf-sub">Arzt, Physiotherapie, Psychologie, Therapie</div></div></div>
+          <div class="bf-check">✓</div>
         </div>
-        <div class="bf-card" id="bf-labor" onclick="selectBerufsfeld('labor',this,'Labormedizin MTA PTA Apotheke Pharmazie')">
+        <div class="bf-card" id="bf-labor" onclick="toggleBerufsfeld('labor',this,'Labormedizin MTA PTA Apotheke Pharmazie')">
           <div class="bf-top"><div class="bf-icon-wrap">🔬</div><div><div class="bf-title">Labor, Apotheke & MTA</div><div class="bf-sub">Labormedizin, Pharmazie, MTA, PTA</div></div></div>
+          <div class="bf-check">✓</div>
         </div>
-        <div class="bf-card" id="bf-it" onclick="selectBerufsfeld('it',this,'Data Analyst Gesundheitswesen Medizincontrolling')">
+        <div class="bf-card" id="bf-it" onclick="toggleBerufsfeld('it',this,'Data Analyst Gesundheitswesen Medizincontrolling')">
           <div class="bf-top"><div class="bf-icon-wrap">💻</div><div><div class="bf-title">IT, Controlling & Verwaltung</div><div class="bf-sub">Data Analyst, IT-Koordinator, Medizincontrolling</div></div></div>
+          <div class="bf-check">✓</div>
         </div>
         <button class="btn-primary" id="bfNextBtn" disabled onclick="goToUpload()" style="margin-top:.5rem;width:100%;justify-content:center">Weiter → CV hochladen</button>
     </div>
