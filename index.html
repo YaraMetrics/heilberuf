@@ -1527,10 +1527,11 @@ function toggleBerufsfeld(type, card, keywords){
 }
 function goToUpload(){
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
-  document.getElementById('up1').classList.add('active');
+  var el = document.getElementById('up1');
+  if(el){ el.classList.add('active'); el.style.display='block'; }
   // Update dots
-  document.getElementById('dc0').className='sp-dot done'; document.getElementById('dc0').textContent='✓';
-  document.getElementById('dc1').className='sp-dot active';
+  document.getElementById('dc0').className='dot-circ done'; document.getElementById('dc0').textContent='✓';
+  document.getElementById('dc1').className='dot-circ active';
   window.scrollTo(0,0);
 }
 </script>
