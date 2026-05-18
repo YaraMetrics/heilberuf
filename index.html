@@ -1543,3 +1543,9 @@ function toggleBerufsfeld(type, card, keywords){
   document.getElementById('bfNextBtn').disabled = selectedFields.size === 0;
 }
 </script>
+<script>
+function goToUpload(){
+  if(selectedFields && selectedFields.size > 0) setUpStep(1);
+  else if(selectedBerufsfeld) setUpStep(1);
+}
+</script>
