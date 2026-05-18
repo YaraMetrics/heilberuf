@@ -1528,3 +1528,18 @@ loadCandidates();
 .sub-opt:hover{background:rgba(14,168,154,.08);color:#0ea89a}
 .sub-opt input{accent-color:#0ea89a;width:13px;height:13px}
 </style>
+<script>
+const selectedFields = new Map();
+function toggleBerufsfeld(type, card, keywords){
+  if(selectedFields.has(type)){
+    selectedFields.delete(type);
+    card.classList.remove('selected');
+  } else {
+    selectedFields.set(type, keywords);
+    card.classList.add('selected');
+  }
+  selectedKeywords = Array.from(selectedFields.values()).join(' ');
+  selectedBerufsfeld = Array.from(selectedFields.keys()).join(',');
+  document.getElementById('bfNextBtn').disabled = selectedFields.size === 0;
+}
+</script>
