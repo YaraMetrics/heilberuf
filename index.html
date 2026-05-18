@@ -763,39 +763,19 @@ footer{background:var(--navy);color:rgba(255,255,255,.55);padding:1.8rem 3rem;di
       <div class="panel-title">Was suchen Sie?</div>
       <p class="panel-sub">Wählen Sie Ihren Bereich — für präzisere Ergebnisse aus der Bundesagentur.</p>
       <div class="berufsfeld-grid">
-        <div class="bf-card" id="bf-pflege" onclick="selectBerufsfeld('pflege',this)">
-          <div class="bf-icon">🏥</div>
-          <div class="bf-title">Pflege & Betreuung</div>
-          <div class="bf-sub">Krankenhaus, Pflegeheim, Ambulante Pflege</div>
-          <div class="sub-options">
-            <label class="sub-opt"><input type="radio" name="pflege-sub" value="Krankenpflege"> Krankenhaus</label>
-            <label class="sub-opt"><input type="radio" name="pflege-sub" value="Altenpflege"> Pflegeheim</label>
-            <label class="sub-opt"><input type="radio" name="pflege-sub" value="ambulante Pflege"> Ambulante Pflege</label>
-          </div>
+        <div class="bf-card" id="bf-pflege" onclick="selectBerufsfeld('pflege',this,'Krankenpflege Altenpflege')">
+          <div class="bf-top"><div class="bf-icon-wrap">🏥</div><div><div class="bf-title">Pflege & Betreuung</div><div class="bf-sub">Krankenpflege, Altenpflege, Ambulante Pflege</div></div></div>
         </div>
-        <div class="bf-card" id="bf-medizin" onclick="selectBerufsfeld('medizin',this)">
-          <div class="bf-icon">🩺</div>
-          <div class="bf-title">Medizin & Therapie</div>
-          <div class="bf-sub">Arzt, Physiotherapie, Psychologie</div>
-          <div class="sub-options">
-            <label class="sub-opt"><input type="radio" name="medizin-sub" value="Arzt Ärztin"> Arzt/Ärztin</label>
-            <label class="sub-opt"><input type="radio" name="medizin-sub" value="Physiotherapie"> Physiotherapie</label>
-            <label class="sub-opt"><input type="radio" name="medizin-sub" value="Psychologie Psychotherapie"> Psychologie</label>
-          </div>
+        <div class="bf-card" id="bf-medizin" onclick="selectBerufsfeld('medizin',this,'Arzt Ärztin Physiotherapie Psychologie')">
+          <div class="bf-top"><div class="bf-icon-wrap">🩺</div><div><div class="bf-title">Medizin & Therapie</div><div class="bf-sub">Arzt, Physiotherapie, Psychologie, Therapie</div></div></div>
         </div>
-        <div class="bf-card" id="bf-it" onclick="selectBerufsfeld('it',this)">
-          <div class="bf-icon">💻</div>
-          <div class="bf-title">IT & Verwaltung</div>
-          <div class="bf-sub">Data Analyst, IT, Controlling, Verwaltung</div>
-          <div class="sub-options">
-            <label class="sub-opt"><input type="radio" name="it-sub" value="Data Analyst Gesundheitswesen"> Data Analyst / BI</label>
-            <label class="sub-opt"><input type="radio" name="it-sub" value="IT Koordinator Krankenhaus"> IT-Koordinator</label>
-            <label class="sub-opt"><input type="radio" name="it-sub" value="Medizincontrolling"> Medizincontrolling</label>
-            <label class="sub-opt"><input type="radio" name="it-sub" value="Verwaltung Krankenhaus"> Verwaltung/HR</label>
-          </div>
+        <div class="bf-card" id="bf-labor" onclick="selectBerufsfeld('labor',this,'Labormedizin MTA PTA Apotheke Pharmazie')">
+          <div class="bf-top"><div class="bf-icon-wrap">🔬</div><div><div class="bf-title">Labor, Apotheke & MTA</div><div class="bf-sub">Labormedizin, Pharmazie, MTA, PTA</div></div></div>
         </div>
-      </div>
-      <button class="btn-primary" id="bfNextBtn" disabled onclick="goToUpload()" style="margin-top:.5rem;width:100%;justify-content:center">Weiter → CV hochladen</button>
+        <div class="bf-card" id="bf-it" onclick="selectBerufsfeld('it',this,'Data Analyst Gesundheitswesen Medizincontrolling')">
+          <div class="bf-top"><div class="bf-icon-wrap">💻</div><div><div class="bf-title">IT, Controlling & Verwaltung</div><div class="bf-sub">Data Analyst, IT-Koordinator, Medizincontrolling</div></div></div>
+        </div>
+        <button class="btn-primary" id="bfNextBtn" disabled onclick="goToUpload()" style="margin-top:.5rem;width:100%;justify-content:center">Weiter → CV hochladen</button>
     </div>
 
     <!-- PANEL 1 -->
