@@ -364,6 +364,16 @@ footer{background:var(--ink);color:rgba(255,255,255,.4);padding:1.6rem 3rem;disp
   footer{padding:1.4rem 1.2rem;flex-direction:column;text-align:center}
   .pb-item::after{width:40px}
 }
+
+.matches-dropdown{position:relative}
+.matches-btn{cursor:pointer;user-select:none}
+.matches-list{display:none;position:absolute;top:110%;right:0;background:white;border-radius:16px;box-shadow:0 16px 60px rgba(13,27,42,.15);border:1px solid var(--border);min-width:280px;max-height:350px;overflow-y:auto;z-index:400;padding:.6rem}
+.matches-list.show{display:block}
+.match-item{padding:.7rem .9rem;border-radius:12px;transition:background .2s;cursor:pointer}
+.match-item:hover{background:var(--teal-pale)}
+.match-item-title{font-size:.83rem;font-weight:600;color:var(--ink)}
+.match-item-org{font-size:.73rem;color:var(--muted);margin-top:.1rem}
+.matches-empty{padding:1.2rem;text-align:center;font-size:.83rem;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -421,7 +431,12 @@ footer{background:var(--ink);color:rgba(255,255,255,.4);padding:1.6rem 3rem;disp
     <button class="nav-link" id="nl-swipe" onclick="navigate('swipe')">Swipe</button>
   </div>
   <div class="nav-right">
-    <div class="nav-badge" id="navBadge">♥ 0 Matches</div>
+    <div class="matches-dropdown">
+  <div class="nav-badge matches-btn" id="navBadge" onclick="toggleMatches()">♥ 0 Matches</div>
+  <div class="matches-list" id="matchesList">
+    <div class="matches-empty" id="matchesEmpty">Noch keine Matches — liken Sie Stellen!</div>
+  </div>
+</div>
     <div id="navAuth"><button class="nav-cta" onclick="navigate('login')">Anmelden →</button></div>
     <div id="navUser" style="display:none"><div class="user-menu"><div class="user-av" id="userAv">?</div><button class="logout-btn" onclick="doLogout()">Abmelden</button></div></div>
   </div>
@@ -635,6 +650,29 @@ function navigate(page){document.querySelectorAll('.page').forEach(p=>p.classLis
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
 function openModal(id){document.getElementById(id).classList.add('show');}
 function closeModal(id){document.getElementById(id).classList.remove('show');}
+
+function toggleMatches(){
+  document.getElementById('matchesList').classList.toggle('show');
+}
+document.addEventListener('click', function(e){
+  if(!e.target.closest('.matches-dropdown')){
+    document.getElementById('matchesList').classList.remove('show');
+  }
+});
+function addToMatchesList(job){
+  const empty = document.getElementById('matchesEmpty');
+  if(empty) empty.style.display = 'none';
+  const list = document.getElementById('matchesList');
+  const existing = document.getElementById('match-item-'+job.id);
+  if(existing){ existing.remove(); return; }
+  const div = document.createElement('div');
+  div.className = 'match-item';
+  div.id = 'match-item-'+job.id;
+  div.innerHTML = `<div class="match-item-title">${job.title}</div><div class="match-item-org">🏥 ${job.org} · 📍 ${job.city||job.location||''}</div>`;
+  if(job.url) div.onclick = () => window.open(job.url, '_blank');
+  list.appendChild(div);
+}
+
 function addMatch(){ST.matchCount++;document.getElementById('navBadge').textContent=`♥ ${ST.matchCount} Matches`;document.getElementById('swipeCnt').textContent=`♥ ${ST.matchCount} Matches`;}
 function goStep(n){
   for(let i=0;i<=4;i++){const el=document.getElementById('step'+i);if(el)el.classList.remove('active');}
@@ -707,7 +745,7 @@ function renderResults(data){
       </div>
     </div>`).join('');
 }
-function likeJob(id){const card=document.getElementById('jcr'+id);const job=JOBS.find(j=>j.id===id)||{id,title:'Stelle',org:'Klinik',city:'Ulm',score:80};if(ST.likedJobs.has(id)){ST.likedJobs.delete(id);card.classList.remove('liked');}else{ST.likedJobs.add(id);card.classList.add('liked');addMatch();toast('♥ Stelle gemerkt!');saveMatch(job);}}
+function likeJob(id){const card=document.getElementById('jcr'+id);const job=JOBS.find(j=>j.id===id)||{id,title:'Stelle',org:'Klinik',city:'Ulm',score:80};if(ST.likedJobs.has(id)){ST.likedJobs.delete(id);card.classList.remove('liked');}else{ST.likedJobs.add(id);card.classList.add('liked');addMatch();addToMatchesList(job);toast('♥ Stelle gemerkt!');saveMatch(job);}}
 function skipJob(id){const el=document.getElementById('jcr'+id);el.style.transition='all .3s';el.style.opacity='0';el.style.transform='translateX(-16px)';setTimeout(()=>el.remove(),300);}
 function resetAll(){removeFile();document.getElementById('consentChk').checked=false;document.querySelectorAll('.bf-card').forEach(c=>c.classList.remove('selected'));if(document.getElementById('cityInput'))document.getElementById('cityInput').value='';if(document.getElementById('umkreisSelect'))document.getElementById('umkreisSelect').value='50';ST.selectedFields.clear();ST.selectedKeywords='';document.getElementById('bfBtn').disabled=true;['ls1','ls2','ls3','ls4'].forEach((id,i)=>{const el=document.getElementById(id);if(el){el.className='l-step'+(i===0?' active':'');el.querySelector('.l-chk').textContent=i===0?'→':i+1;}});goStep(0);}
 function setSwipeMode(mode){document.getElementById('sv-bew').classList.toggle('active',mode==='bew');document.getElementById('sv-hosp').classList.toggle('active',mode==='hosp');document.getElementById('mb-bew').classList.toggle('active',mode==='bew');document.getElementById('mb-hosp').classList.toggle('active',mode==='hosp');}
