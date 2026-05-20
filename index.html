@@ -1089,7 +1089,20 @@ function setRole(role){selectedRole=role;document.getElementById('role-bew').cla
 async function doLogin(){const email=document.getElementById('loginEmail').value.trim();const password=document.getElementById('loginPassword').value;const err=document.getElementById('loginError');err.classList.remove('show');if(!email||!password){err.textContent='Bitte E-Mail und Passwort eingeben.';err.classList.add('show');return;}const btn=document.querySelector('#page-login .auth-btn');btn.disabled=true;btn.textContent='Wird angemeldet...';const{data,error}=await sb.auth.signInWithPassword({email,password});btn.disabled=false;btn.textContent='Anmelden →';if(error){err.textContent=error.message;err.classList.add('show');return;}await onLogin(data.user);}
 async function doRegister(){const name=document.getElementById('registerName').value.trim();const email=document.getElementById('registerEmail').value.trim();const password=document.getElementById('registerPassword').value;const err=document.getElementById('registerError');const ok=document.getElementById('registerSuccess');err.classList.remove('show');ok.classList.remove('show');if(!name||!email||!password){err.textContent='Bitte alle Felder ausfüllen.';err.classList.add('show');return;}if(password.length<8){err.textContent='Passwort muss mindestens 8 Zeichen haben.';err.classList.add('show');return;}const btn=document.querySelector('#page-register .auth-btn');btn.disabled=true;btn.textContent='Wird registriert...';const{data,error}=await sb.auth.signUp({email,password});btn.disabled=false;btn.textContent='Kostenlos registrieren →';if(error){err.textContent=error.message;err.classList.add('show');return;}if(data.user){await sb.from('profiles').upsert({id:data.user.id,role:selectedRole,name});ok.textContent='✓ Registrierung erfolgreich!';ok.classList.add('show');setTimeout(()=>navigate('login'),2500);}}
 async function doLogout(){await sb.auth.signOut();currentUser=null;updateNav(null);navigate('landing');toast('👋 Erfolgreich abgemeldet');}
-async function onLogin(user){currentUser=user;updateNav(user);toast('✓ Willkommen zurück!');navigate('upload');}
+async function onLogin(user){
+ currentUser=user;
+ updateNav(user);
+ // Load avatar if saved
+ const saved = JSON.parse(localStorage.getItem('heilberuf_profile') || '{}');
+ if(saved.avatar){
+   const navAv = document.getElementById('userAv');
+   if(navAv){
+     navAv.innerHTML = `<img src="${saved.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+   }
+ }
+ toast('✓ Willkommen zurück!');
+ navigate('upload');
+}
 function updateNav(user){const a=document.getElementById('navAuth'),u=document.getElementById('navUser');if(user){a.style.display='none';u.style.display='flex';document.getElementById('userAv').textContent=(user.email||'?').substring(0,2).toUpperCase();}else{a.style.display='flex';u.style.display='none';}}
 async function saveMatch(job){if(!currentUser)return;await sb.from('matches').insert({user_id:currentUser.id,job_title:job.title,job_org:job.org,job_location:job.city||job.location,match_score:job.score||job.matchScore,status:'liked'});}
 async function init(){const{data:{session}}=await sb.auth.getSession();if(session?.user)await onLogin(session.user);setTimeout(()=>openModal('dsgvoModal'),800);sb.auth.onAuthStateChange((_,session)=>{if(session?.user){currentUser=session.user;updateNav(session.user);}else{currentUser=null;updateNav(null);}});}
