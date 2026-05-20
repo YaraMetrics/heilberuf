@@ -663,11 +663,12 @@ function addToMatchesList(job){
   const empty = document.getElementById('matchesEmpty');
   if(empty) empty.style.display = 'none';
   const list = document.getElementById('matchesList');
-  const existing = document.getElementById('match-item-'+job.id);
+  const safeId = (job.title||job.id||'').replace(/[^a-z0-9]/gi,'_');
+  const existing = document.getElementById('match-item-'+safeId);
   if(existing){ existing.remove(); return; }
   const div = document.createElement('div');
   div.className = 'match-item';
-  div.id = 'match-item-'+job.id;
+  div.id = 'match-item-'+safeId;
   div.innerHTML = `<div class="match-item-title">${job.title}</div><div class="match-item-org">🏥 ${job.org} · 📍 ${job.city||job.location||''}</div>`;
   const jobUrl = job.url || `https://www.arbeitsagentur.de/jobsuche/suche?was=${encodeURIComponent(job.title)}&wo=${encodeURIComponent(job.city||'')}`;
   div.onclick = () => window.open(jobUrl, '_blank');
