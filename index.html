@@ -592,6 +592,11 @@ footer{background:var(--ink);color:rgba(255,255,255,.4);padding:1.6rem 3rem;disp
         <div><div class="pan-ey">Schritt 5 von 5</div><div class="pan-h">Ihre Matches</div></div>
         <button class="btn-s" onclick="resetAll()" style="font-size:.8rem;padding:.5rem 1.1rem">← Neuer CV</button>
       </div>
+      <div style="background:white;border-radius:16px;padding:1rem 1.3rem;margin-bottom:1rem;border:1px solid var(--border);display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
+        <span style="font-size:.78rem;font-weight:700;color:var(--teal);white-space:nowrap">Min. Match:</span>
+        <input type="range" id="matchFilter" min="30" max="90" value="50" style="flex:1;accent-color:var(--teal);min-width:120px" oninput="filterJobs(this.value)">
+        <span style="font-size:.85rem;font-weight:700;color:var(--ink);min-width:40px" id="matchFilterVal">50%+</span>
+      </div>
       <div class="prof-bar" id="profBar"></div>
       <div class="res-count" id="resCount"></div>
       <div class="job-list" id="jobListEl"></div>
@@ -748,6 +753,19 @@ function renderResults(data){
       </div>
     </div>`).join('');
 }
+
+function filterJobs(val){
+  document.getElementById('matchFilterVal').textContent = val + '%+';
+  const cards = document.querySelectorAll('.job-card');
+  let visible = 0;
+  cards.forEach(card => {
+    const pct = parseInt(card.querySelector('.jc-pct')?.textContent || '0');
+    if(pct >= parseInt(val)){card.style.display='';visible++;}
+    else card.style.display='none';
+  });
+  document.getElementById('resCount').textContent = visible + ' passende Stellen gefunden';
+}
+
 function likeJob(id){const card=document.getElementById('jcr'+id);const job=JOBS.find(j=>j.id===id)||{id,title:'Stelle',org:'Klinik',city:'Ulm',score:80};if(ST.likedJobs.has(id)){ST.likedJobs.delete(id);card.classList.remove('liked');document.getElementById('match-item-'+id)?.remove();}else{
   ST.likedJobs.add(id);
   card.classList.add('liked');
