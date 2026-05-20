@@ -622,7 +622,12 @@ footer{background:var(--ink);color:rgba(255,255,255,.4);padding:1.6rem 3rem;disp
         <div class="h-side">
           <div class="h-side-hdr"><div class="h-side-ttl">⚙️ Anforderungen</div><div class="h-side-sub">Definieren Sie Ihr Wunschprofil</div></div>
           <div class="filter-form">
-            <div class="fg"><label class="flbl">Berufsfeld</label><div class="fchips"><div class="fchip on" onclick="tc(this)">Data Analyst</div><div class="fchip" onclick="tc(this)">Pflegefachkraft</div><div class="fchip" onclick="tc(this)">Arzt/Ärztin</div></div></div>
+            <div class="fg"><label class="flbl">Berufsfeld</label><div class="fchips">
+              <div class="fchip on" onclick="tc(this)">🏥 Pflege & Betreuung</div>
+              <div class="fchip" onclick="tc(this)">🩺 Medizin & Therapie</div>
+              <div class="fchip" onclick="tc(this)">🔬 Labor & MTA</div>
+              <div class="fchip" onclick="tc(this)">💻 IT & Controlling</div>
+            </div></div>
             <div class="fg"><label class="flbl">IT-Kenntnisse</label><div class="fchips"><div class="fchip on" onclick="tc(this)">Power BI</div><div class="fchip on" onclick="tc(this)">SQL</div><div class="fchip" onclick="tc(this)">SAP</div><div class="fchip" onclick="tc(this)">Excel</div></div></div>
             <div class="fg"><label class="flbl">Sprachen</label><div class="fchips"><div class="fchip on" onclick="tc(this)">Deutsch C1+</div><div class="fchip" onclick="tc(this)">Englisch</div><div class="fchip" onclick="tc(this)">Arabisch</div></div></div>
             <div class="fg"><label class="flbl">Min. Erfahrung: <b id="expV">2</b> J.</label><div class="frange"><span>0</span><input type="range" min="0" max="10" value="2" oninput="document.getElementById('expV').textContent=this.value"><span>10</span></div></div>
