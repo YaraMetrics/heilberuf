@@ -438,7 +438,7 @@ footer{background:var(--ink);color:rgba(255,255,255,.4);padding:1.6rem 3rem;disp
   </div>
 </div>
     <div id="navAuth"><button class="nav-cta" onclick="navigate('login')">Anmelden →</button></div>
-    <div id="navUser" style="display:none"><div class="user-menu"><div class="user-av" id="userAv">?</div><button class="logout-btn" onclick="doLogout()">Abmelden</button></div></div>
+    <div id="navUser" style="display:none"><div class="user-menu"><div class="user-av" id="userAv" onclick="openProfile()" style="cursor:pointer" title="Mein Profil">?</div><button class="logout-btn" onclick="doLogout()">Abmelden</button></div></div>
   </div>
 </nav>
 <div class="page active" id="page-landing">
@@ -674,6 +674,57 @@ const CANDS=[
 ];
 function navigate(page){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById('page-'+page).classList.add('active');document.querySelectorAll('.nav-link').forEach(l=>l.classList.remove('active'));const nl=document.getElementById('nl-'+page);if(nl)nl.classList.add('active');window.scrollTo(0,0);if(page==='swipe'){loadRealJobs();loadCandidates();}}
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
+
+function openProfile(){
+  if(!currentUser) return;
+  document.getElementById('profileAvatar').textContent = (currentUser.email||'?').substring(0,2).toUpperCase();
+  document.getElementById('profileName').textContent = currentUser.email?.split('@')[0] || '—';
+  document.getElementById('profileEmail').textContent = currentUser.email || '—';
+  // Load saved data
+  const saved = JSON.parse(localStorage.getItem('heilberuf_profile') || '{}');
+  if(saved.city) document.getElementById('profileCity').value = saved.city;
+  if(saved.umkreis) document.getElementById('profileUmkreis').value = saved.umkreis;
+  if(saved.cvName) document.getElementById('profileCVStatus').textContent = '✓ ' + saved.cvName;
+  if(saved.fields) {
+    saved.fields.forEach(f => {
+      const el = document.getElementById('pf-'+f);
+      if(el) el.checked = true;
+    });
+  }
+  navigate('profile');
+}
+
+function saveProfile(){
+  const city = document.getElementById('profileCity').value.trim();
+  const umkreis = document.getElementById('profileUmkreis').value;
+  const fields = ['pflege','medizin','labor','it'].filter(f => document.getElementById('pf-'+f)?.checked);
+  const saved = JSON.parse(localStorage.getItem('heilberuf_profile') || '{}');
+  localStorage.setItem('heilberuf_profile', JSON.stringify({...saved, city, umkreis, fields}));
+  // Auto-fill the matching form
+  if(document.getElementById('cityInput')) document.getElementById('cityInput').value = city;
+  if(document.getElementById('umkreisSelect')) document.getElementById('umkreisSelect').value = umkreis;
+  toast('✓ Profil gespeichert!');
+  setTimeout(() => navigate('upload'), 1000);
+}
+
+function saveProfileCV(input){
+  if(!input.files[0]) return;
+  const fname = input.files[0].name;
+  document.getElementById('profileCVStatus').textContent = '✓ ' + fname;
+  const saved = JSON.parse(localStorage.getItem('heilberuf_profile') || '{}');
+  localStorage.setItem('heilberuf_profile', JSON.stringify({...saved, cvName: fname}));
+  toast('✓ CV gespeichert!');
+}
+
+function showCitySuggestions2(val){
+  const box = document.getElementById('citySuggestions2');
+  if(!val||val.length<1){box.style.display='none';return;}
+  const matches = DE_CITIES.filter(c=>c.toLowerCase().startsWith(val.toLowerCase())).slice(0,8);
+  if(!matches.length){box.style.display='none';return;}
+  box.innerHTML=matches.map(c=>`<div style="padding:.5rem .9rem;cursor:pointer;font-size:.85rem;color:var(--ink)" onmouseover="this.style.background='var(--teal-pale)'" onmouseout="this.style.background=''" onclick="document.getElementById('profileCity').value='${c}';document.getElementById('citySuggestions2').style.display='none'">${c}</div>`).join('');
+  box.style.display='block';
+}
+
 function openModal(id){document.getElementById(id).classList.add('show');}
 function closeModal(id){document.getElementById(id).classList.remove('show');}
 
@@ -954,6 +1005,75 @@ init();renderCards();loadCandidates();
       <textarea class="form-input" id="contactMsg" rows="4" placeholder="Sehr geehrte/r Bewerber/in, wir haben Ihr Profil auf Heilberuf.de gesehen und möchten Sie gerne kennenlernen..." style="resize:vertical"></textarea>
     </div>
     <button class="auth-btn" onclick="sendContact()">✉ Anfrage senden</button>
+  </div>
+</div>
+
+<div class="page" id="page-profile">
+  <div style="padding-top:72px;min-height:100vh;background:var(--cream)">
+    <div style="max-width:660px;margin:0 auto;padding:3rem 2rem">
+      
+      <!-- Header -->
+      <div style="background:white;border-radius:24px;padding:2rem;margin-bottom:1.5rem;border:1px solid var(--border)">
+        <div style="display:flex;align-items:center;gap:1.2rem;margin-bottom:1.5rem">
+          <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--ink),var(--teal));display:flex;align-items:center;justify-content:center;color:white;font-size:1.4rem;font-weight:700" id="profileAvatar">?</div>
+          <div>
+            <div style="font-family:'Fraunces',serif;font-size:1.4rem;font-weight:700;color:var(--ink)" id="profileName">—</div>
+            <div style="font-size:.82rem;color:var(--muted)" id="profileEmail">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CV Upload -->
+      <div style="background:white;border-radius:24px;padding:1.8rem;margin-bottom:1.2rem;border:1px solid var(--border)">
+        <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--teal);margin-bottom:.8rem">📄 Lebenslauf</div>
+        <div id="profileCVStatus" style="font-size:.88rem;color:var(--muted);margin-bottom:1rem">Noch kein CV hochgeladen</div>
+        <label style="display:inline-flex;align-items:center;gap:.5rem;background:var(--teal-pale);border:1.5px solid rgba(14,168,154,.3);border-radius:50px;padding:.6rem 1.2rem;cursor:pointer;font-size:.83rem;font-weight:600;color:var(--teal)">
+          <input type="file" id="profileCVInput" accept=".pdf,.docx,.txt" style="display:none" onchange="saveProfileCV(this)">
+          ↑ CV hochladen
+        </label>
+      </div>
+
+      <!-- Standort -->
+      <div style="background:white;border-radius:24px;padding:1.8rem;margin-bottom:1.2rem;border:1px solid var(--border)">
+        <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--teal);margin-bottom:.8rem">📍 Bevorzugter Standort</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem">
+          <div>
+            <label class="loc-lbl">Stadt</label>
+            <div class="loc-wrap">
+              <span class="loc-ico">🏙️</span>
+              <input class="loc-input" type="text" id="profileCity" placeholder="z.B. Stuttgart, Ulm..." oninput="showCitySuggestions2(this.value)" autocomplete="off">
+              <div id="citySuggestions2" style="position:absolute;top:100%;left:0;right:0;background:white;border-radius:12px;box-shadow:0 16px 40px rgba(13,27,42,.15);border:1px solid var(--border);z-index:400;max-height:200px;overflow-y:auto;display:none;margin-top:4px"></div>
+            </div>
+          </div>
+          <div>
+            <label class="loc-lbl">Umkreis</label>
+            <select class="loc-sel" id="profileUmkreis">
+              <option value="25">25 km</option>
+              <option value="50" selected>50 km</option>
+              <option value="100">100 km</option>
+              <option value="200">200 km</option>
+              <option value="">Deutschlandweit</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Berufsfeld -->
+      <div style="background:white;border-radius:24px;padding:1.8rem;margin-bottom:1.2rem;border:1px solid var(--border)">
+        <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--teal);margin-bottom:.8rem">💼 Berufsfeld</div>
+        <div style="display:grid;gap:.6rem">
+          <label style="display:flex;align-items:center;gap:.7rem;cursor:pointer;padding:.5rem;border-radius:10px;transition:background .2s" onmouseover="this.style.background='var(--teal-pale)'" onmouseout="this.style.background=''"><input type="checkbox" id="pf-pflege" style="accent-color:var(--teal);width:15px;height:15px"> 🏥 Pflege & Betreuung</label>
+          <label style="display:flex;align-items:center;gap:.7rem;cursor:pointer;padding:.5rem;border-radius:10px;transition:background .2s" onmouseover="this.style.background='var(--teal-pale)'" onmouseout="this.style.background=''"><input type="checkbox" id="pf-medizin" style="accent-color:var(--teal);width:15px;height:15px"> 🩺 Medizin & Therapie</label>
+          <label style="display:flex;align-items:center;gap:.7rem;cursor:pointer;padding:.5rem;border-radius:10px;transition:background .2s" onmouseover="this.style.background='var(--teal-pale)'" onmouseout="this.style.background=''"><input type="checkbox" id="pf-labor" style="accent-color:var(--teal);width:15px;height:15px"> 🔬 Labor, Apotheke & MTA</label>
+          <label style="display:flex;align-items:center;gap:.7rem;cursor:pointer;padding:.5rem;border-radius:10px;transition:background .2s" onmouseover="this.style.background='var(--teal-pale)'" onmouseout="this.style.background=''"><input type="checkbox" id="pf-it" style="accent-color:var(--teal);width:15px;height:15px"> 💻 IT, Controlling & Verwaltung</label>
+        </div>
+      </div>
+
+      <!-- Save Button -->
+      <button class="btn-p" onclick="saveProfile()" style="width:100%;justify-content:center;margin-bottom:1rem">✓ Profil speichern</button>
+      <button class="btn-s" onclick="navigate('upload')" style="width:100%;justify-content:center">← Zurück zum Matching</button>
+
+    </div>
   </div>
 </div>
 </body>
