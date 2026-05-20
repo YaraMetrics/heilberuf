@@ -972,55 +972,27 @@ function filterJobs(val){
   document.getElementById('resCount').textContent = visible + ' passende Stellen gefunden';
 }
 
-function saveMatchesToStorage(){
-  const saved = JSON.parse(localStorage.getItem('heilberuf_matches_v2') || '[]');
-  // Get all match items from dropdown
-  const items = document.querySelectorAll('.match-item');
-  const jobs = Array.from(items).map(item => ({
-    id: item.id.replace('match-item-',''),
-    title: item.querySelector('.match-item-title')?.textContent || '',
-    org: item.querySelector('.match-item-org')?.textContent?.split('·')[0]?.replace('🏥','').trim() || '',
-    city: item.querySelector('.match-item-org')?.textContent?.split('📍')[1]?.trim() || '',
-    url: item._url || ''
-  }));
-  localStorage.setItem('heilberuf_matches_v2', JSON.stringify(jobs));
-}
-function loadMatchesFromStorage(){
-  const saved = JSON.parse(localStorage.getItem('heilberuf_matches_v2') || '[]');
-  if(!saved.length) return;
-  const empty = document.getElementById('matchesEmpty');
-  if(empty) empty.style.display = 'none';
-  const list = document.getElementById('matchesList');
-  saved.forEach(job => {
-    ST.likedJobs.add(job.id);
-    const safeId = (job.title||job.id||'').replace(/[^a-z0-9]/gi,'_');
-    if(document.getElementById('match-item-'+safeId)) return;
-    const div = document.createElement('div');
-    div.className = 'match-item';
-    div.id = 'match-item-'+safeId;
-    div.innerHTML = `<div class="match-item-title">${job.title}</div><div class="match-item-org">🏥 ${job.org} · 📍 ${job.city||''}</div>`;
-    const url = job.url || `https://www.arbeitsagentur.de/jobsuche/suche?was=${encodeURIComponent(job.title||'')}`;
-    div.onclick = () => window.open(url, '_blank');
-    div.style.cursor = 'pointer';
-    list.appendChild(div);
-  });
-  ST.matchCount = saved.length;
-  document.getElementById('navBadge').textContent = `♥ ${saved.length} Matches`;
-  document.getElementById('swipeCnt').textContent = `♥ ${saved.length} Matches`;
-}
-function likeJob(id){const card=document.getElementById('jcr'+id);const job=JOBS.find(j=>j.id===id)||{id,title:'Stelle',org:'Klinik',city:'Ulm',score:80};if(ST.likedJobs.has(id)){ST.likedJobs.delete(id);card.classList.remove('liked');document.getElementById('match-item-'+id)?.remove();saveMatchesToStorage();}else{
+function likeJob(id){const card=document.getElementById('jcr'+id);const job=JOBS.find(j=>j.id===id)||{id,title:'Stelle',org:'Klinik',city:'Ulm',score:80};if(ST.likedJobs.has(id)){ST.likedJobs.delete(id);card.classList.remove('liked');document.getElementById('match-item-'+id)?.remove();}else{
   ST.likedJobs.add(id);
   card.classList.add('liked');
-  const title = card.querySelector('.jc-title')?.textContent?.trim() || '';
-  const org = card.querySelector('.jc-oname')?.textContent?.trim() || '';
-  const city = card.querySelector('.jc-oloc')?.textContent?.replace('📍','').split('·')[0]?.trim() || '';
-  const url = card.querySelector('a.jc-apply')?.href || '';
-  const realJob = {id, title, org, city, url};
-  addToMatchesList(realJob);
   addMatch();
-  const allSaved = JSON.parse(localStorage.getItem('heilberuf_matches_v2') || '[]');
-  if(!allSaved.find(j=>j.title===title)){ allSaved.push(realJob); localStorage.setItem('heilberuf_matches_v2', JSON.stringify(allSaved)); }
-  toast('♥ Stelle gemerkt!');saveMatch(job);unction skipJob(id){const el=document.getElementById('jcr'+id);el.style.transition='all .3s';el.style.opacity='0';el.style.transform='translateX(-16px)';setTimeout(()=>el.remove(),300);}
+  // Get real job data from card
+  const title = card.querySelector('.jc-title')?.textContent || job.title;
+  const org = card.querySelector('.jc-oname')?.textContent || job.org;
+  const loc = card.querySelector('.jc-oloc')?.textContent || '';
+  const applyBtn = card.querySelector('.jc-apply');
+  const url = applyBtn?.href || applyBtn?.getAttribute('onclick') || '';
+  addToMatchesList({
+    id: id,
+    title: card.querySelector('.jc-title')?.innerText?.trim() || '',
+    org: card.querySelector('.jc-oname')?.innerText?.trim() || '',
+    city: card.querySelector('.jc-oloc')?.innerText?.replace('📍','').split('·')[0]?.trim() || '',
+    url: card.querySelector('a.jc-apply')?.href || ''
+  });
+  toast('♥ Stelle gemerkt!');
+  saveMatch(job);
+}}
+function skipJob(id){const el=document.getElementById('jcr'+id);el.style.transition='all .3s';el.style.opacity='0';el.style.transform='translateX(-16px)';setTimeout(()=>el.remove(),300);}
 function resetAll(){removeFile();document.getElementById('consentChk').checked=false;document.querySelectorAll('.bf-card').forEach(c=>c.classList.remove('selected'));if(document.getElementById('cityInput'))document.getElementById('cityInput').value='';if(document.getElementById('umkreisSelect'))document.getElementById('umkreisSelect').value='50';ST.selectedFields.clear();ST.selectedKeywords='';document.getElementById('bfBtn').disabled=true;['ls1','ls2','ls3','ls4'].forEach((id,i)=>{const el=document.getElementById(id);if(el){el.className='l-step'+(i===0?' active':'');el.querySelector('.l-chk').textContent=i===0?'→':i+1;}});goStep(0);}
 function setSwipeMode(mode){document.getElementById('sv-bew').classList.toggle('active',mode==='bew');document.getElementById('sv-hosp').classList.toggle('active',mode==='hosp');document.getElementById('mb-bew').classList.toggle('active',mode==='bew');document.getElementById('mb-hosp').classList.toggle('active',mode==='hosp');}
 async function loadRealJobs(){try{const res=await fetch('/api/matching',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cvText:'Pflegefachkraft Data Analyst Gesundheitswesen',keywords:ST.selectedKeywords||'Gesundheitswesen',city:'',umkreis:'100'})});const data=await res.json();if(data&&data.jobs&&data.jobs.length>0){ST.realJobs=data.jobs.map((j,i)=>({id:100+i,org:j.org,city:j.location||'Deutschland',icon:'🏥',contract:j.contract||'Vollzeit',salary:'',title:j.title,tags:j.tags||['Gesundheitswesen'],score:j.matchScore||80,reasons:j.reasons||['Aktuelle Stelle','Direkt bewerben möglich'],url:j.url||''}));ST.cardIndex=0;renderCards();}}catch(e){}}
@@ -1149,7 +1121,6 @@ async function doLogout(){await sb.auth.signOut();currentUser=null;updateNav(nul
 async function onLogin(user){
  currentUser=user;
  updateNav(user);
- loadMatchesFromStorage();
  // Load avatar if saved
  const saved = JSON.parse(localStorage.getItem('heilberuf_profile') || '{}');
  if(saved.avatar){
@@ -1164,8 +1135,7 @@ async function onLogin(user){
 function updateNav(user){const a=document.getElementById('navAuth'),u=document.getElementById('navUser');if(user){a.style.display='none';u.style.display='flex';document.getElementById('userAv').textContent=(user.email||'?').substring(0,2).toUpperCase();}else{a.style.display='flex';u.style.display='none';}}
 async function saveMatch(job){if(!currentUser)return;await sb.from('matches').insert({user_id:currentUser.id,job_title:job.title,job_org:job.org,job_location:job.city||job.location,match_score:job.score||job.matchScore,status:'liked'});}
 async function init(){const{data:{session}}=await sb.auth.getSession();if(session?.user)await onLogin(session.user);setTimeout(()=>openModal('dsgvoModal'),800);sb.auth.onAuthStateChange((_,session)=>{if(session?.user){currentUser=session.user;updateNav(session.user);}else{currentUser=null;updateNav(null);}});}
-try{init();loadMatchesFromStorage();renderCards();loadCandidates();}catch(e){console.error('Init error:',e);}
-window.onerror = function(msg,src,line){console.error('JS Error:',msg,'line:',line);return false;};
+init();renderCards();loadCandidates();
 </script>
 
 <div class="modal-ov" id="contactModal">
