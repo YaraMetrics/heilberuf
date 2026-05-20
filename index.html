@@ -973,17 +973,40 @@ function filterJobs(val){
 }
 
 function saveMatchesToStorage(){
-  localStorage.setItem('heilberuf_matches', JSON.stringify(Array.from(ST.likedJobs)));
+  const saved = JSON.parse(localStorage.getItem('heilberuf_matches_v2') || '[]');
+  // Get all match items from dropdown
+  const items = document.querySelectorAll('.match-item');
+  const jobs = Array.from(items).map(item => ({
+    id: item.id.replace('match-item-',''),
+    title: item.querySelector('.match-item-title')?.textContent || '',
+    org: item.querySelector('.match-item-org')?.textContent?.split('·')[0]?.replace('🏥','').trim() || '',
+    city: item.querySelector('.match-item-org')?.textContent?.split('📍')[1]?.trim() || '',
+    url: item._url || ''
+  }));
+  localStorage.setItem('heilberuf_matches_v2', JSON.stringify(jobs));
 }
 function loadMatchesFromStorage(){
-  const saved = JSON.parse(localStorage.getItem('heilberuf_matches') || '[]');
-  saved.forEach(id => ST.likedJobs.add(id));
-  const count = saved.length;
-  if(count > 0){
-    document.getElementById('navBadge').textContent = `♥ ${count} Matches`;
-    document.getElementById('swipeCnt').textContent = `♥ ${count} Matches`;
-    ST.matchCount = count;
-  }
+  const saved = JSON.parse(localStorage.getItem('heilberuf_matches_v2') || '[]');
+  if(!saved.length) return;
+  const empty = document.getElementById('matchesEmpty');
+  if(empty) empty.style.display = 'none';
+  const list = document.getElementById('matchesList');
+  saved.forEach(job => {
+    ST.likedJobs.add(job.id);
+    const safeId = (job.title||job.id||'').replace(/[^a-z0-9]/gi,'_');
+    if(document.getElementById('match-item-'+safeId)) return;
+    const div = document.createElement('div');
+    div.className = 'match-item';
+    div.id = 'match-item-'+safeId;
+    div.innerHTML = `<div class="match-item-title">${job.title}</div><div class="match-item-org">🏥 ${job.org} · 📍 ${job.city||''}</div>`;
+    const url = job.url || `https://www.arbeitsagentur.de/jobsuche/suche?was=${encodeURIComponent(job.title||'')}`;
+    div.onclick = () => window.open(url, '_blank');
+    div.style.cursor = 'pointer';
+    list.appendChild(div);
+  });
+  ST.matchCount = saved.length;
+  document.getElementById('navBadge').textContent = `♥ ${saved.length} Matches`;
+  document.getElementById('swipeCnt').textContent = `♥ ${saved.length} Matches`;
 }
 function likeJob(id){const card=document.getElementById('jcr'+id);const job=JOBS.find(j=>j.id===id)||{id,title:'Stelle',org:'Klinik',city:'Ulm',score:80};if(ST.likedJobs.has(id)){ST.likedJobs.delete(id);card.classList.remove('liked');document.getElementById('match-item-'+id)?.remove();saveMatchesToStorage();}else{
   ST.likedJobs.add(id);
