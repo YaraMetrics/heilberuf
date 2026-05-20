@@ -643,7 +643,10 @@ footer{background:var(--ink);color:rgba(255,255,255,.4);padding:1.6rem 3rem;disp
               <div class="fchip" onclick="tc(this)">🇬🇧 Englisch B1</div>
             </div>
             <div style="margin-top:.5rem;display:flex;gap:.4rem;align-items:center">
-              <input id="langSearch" type="text" placeholder="Weitere Sprache..." style="flex:1;padding:.35rem .7rem;border:1.5px solid var(--border);border-radius:20px;font-family:inherit;font-size:.75rem;outline:none" onkeydown="if(event.key==='Enter')addLang()">
+              <input id="langSearch" type="text" placeholder="Weitere Sprache..." style="flex:1;padding:.35rem .7rem;border:1.5px solid var(--border);border-radius:20px;font-family:inherit;font-size:.75rem;outline:none" 
+  oninput="showLangSuggestions(this.value)" 
+  onkeydown="if(event.key==='Enter')addLang()">
+<div id="langSuggestions" style="position:absolute;background:white;border-radius:12px;box-shadow:var(--shadow2);border:1px solid var(--border);z-index:100;min-width:180px;display:none;margin-top:2rem"></div>
               <button onclick="addLang()" style="background:var(--teal);color:white;border:none;border-radius:20px;padding:.35rem .8rem;font-size:.75rem;cursor:pointer;font-weight:600">+ Hinzufügen</button>
             </div></div>
             <div class="fg"><label class="flbl">Min. Erfahrung: <b id="expV">2</b> J.</label><div class="frange"><span>0</span><input type="range" min="0" max="10" value="2" oninput="document.getElementById('expV').textContent=this.value"><span>10</span></div></div>
@@ -817,6 +820,29 @@ function renderCards(){const stack=document.getElementById('sStack');stack.inner
 function animateOut(el,dir){const x=dir==='right'?600:dir==='super'?0:-600,y=dir==='super'?-600:0;el.style.transition='transform .4s ease,opacity .4s';el.style.transform=`translateX(${x}px) translateY(${y}px) rotate(${dir==='right'?25:dir==='left'?-25:0}deg)`;el.style.opacity='0';if(dir==='right'||dir==='super'){const allJobs=ST.realJobs&&ST.realJobs.length>0?ST.realJobs:JOBS;const job=allJobs[ST.cardIndex];addMatch();toast(dir==='super'?`⭐ Super Like für ${job?.org}!`:`♥ Match mit ${job?.org}!`);if(job)saveMatch(job);}ST.cardIndex++;setTimeout(renderCards,350);}
 function swipe(dir){const front=document.querySelector('.s-card.front');if(front)animateOut(front,dir);}
 function resetSwipe(){ST.cardIndex=0;renderCards();}
+
+
+const ALL_LANGS = ['Arabisch','Türkisch','Russisch','Polnisch','Französisch','Spanisch','Italienisch','Portugiesisch','Niederländisch','Schwedisch','Norwegisch','Dänisch','Finnisch','Griechisch','Rumänisch','Ukrainisch','Chinesisch','Japanisch','Koreanisch','Persisch','Kurdisch','Albanisch','Serbisch','Kroatisch','Bulgarisch','Ungarisch','Tschechisch','Slowakisch'];
+
+function showLangSuggestions(val){
+  const box = document.getElementById('langSuggestions');
+  if(!val || val.length < 1){box.style.display='none';return;}
+  const matches = ALL_LANGS.filter(l=>l.toLowerCase().startsWith(val.toLowerCase())).slice(0,5);
+  if(!matches.length){box.style.display='none';return;}
+  box.innerHTML = matches.map(l=>`<div style="padding:.45rem .8rem;cursor:pointer;font-size:.78rem;color:var(--ink);border-radius:8px;transition:background .15s" onmouseover="this.style.background='var(--teal-pale)'" onmouseout="this.style.background=''" onclick="selectLang('${l}')">${l}</div>`).join('');
+  box.style.display='block';
+}
+function selectLang(lang){
+  document.getElementById('langSearch').value = lang;
+  document.getElementById('langSuggestions').style.display='none';
+  addLang();
+}
+document.addEventListener('click', e=>{
+  if(!e.target.closest('#langSearch') && !e.target.closest('#langSuggestions')){
+    const box = document.getElementById('langSuggestions');
+    if(box) box.style.display='none';
+  }
+});
 
 function addLang(){
   const input = document.getElementById('langSearch');
