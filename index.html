@@ -880,7 +880,24 @@ function updateKenntnisse(){
   chips.innerHTML=kenntnisse.map((k,i)=>`<div class="fchip${i<2?' on':''}" onclick="tc(this)">${k}</div>`).join('');
 }
 function loadCandidates(){const list=document.getElementById('candList');list.innerHTML='';const vis=CANDS.filter(c=>!ST.skippedCands.has(c.id));document.getElementById('hCnt').textContent=`${vis.length} gefunden`;vis.forEach(c=>{const card=document.createElement('div');card.className='cand-card'+(ST.contactedCands.has(c.id)?' ok':'');card.id='cc'+c.id;card.innerHTML=`<div class="ct"><div class="cav">${c.ini}</div><div class="cn"><div class="cn-name">${c.name}</div><div class="cn-role">${c.role}</div></div><div class="cs"><div class="cs-pct">${c.score}%</div><div class="cs-lbl">Match</div></div></div><div class="cand-tags">${c.skills.map(s=>`<span class="tag tag-t">${s}</span>`).join('')}${c.langs.map(l=>`<span class="tag tag-i">${l}</span>`).join('')}<span class="tag tag-m">📍${c.city}</span></div><div class="c-bar"><div class="c-fill" style="width:${c.score}%"></div></div><div class="ca"><button class="ca-btn ca-contact" onclick="contactCand(${c.id},'${c.name}')">${ST.contactedCands.has(c.id)?'✓ Kontaktiert':'✉ Kontaktieren'}</button><button class="ca-btn ca-prof" onclick="showCandInfo(${c.id})">Profil →</button><button class="ca-btn ca-skip" onclick="skipCand(${c.id})">✕</button></div>`;list.appendChild(card);});}
-function contactCand(id,name){ST.contactedCands.add(id);addMatch();toast(`✉ Anfrage an ${name} gesendet!`);loadCandidates();}
+function contactCand(id,name){
+  document.getElementById('contactCandName').textContent = 'Kandidat: ' + name;
+  document.getElementById('contactMsg').value = 'Sehr geehrte/r ' + name + ',\n\nwir haben Ihr Profil auf Heilberuf.de gesehen und möchten Sie gerne zu einem Gespräch einladen.\n\nMit freundlichen Grüßen';
+  openModal('contactModal');
+  window._contactId = id;
+  window._contactName = name;
+}
+function sendContact(){
+  const from = document.getElementById('contactFrom').value.trim();
+  const email = document.getElementById('contactEmail').value.trim();
+  const msg = document.getElementById('contactMsg').value.trim();
+  if(!from || !email){alert('Bitte Einrichtung und E-Mail ausfüllen.');return;}
+  ST.contactedCands.add(window._contactId);
+  addMatch();
+  closeModal('contactModal');
+  toast('✉ Anfrage erfolgreich gesendet!');
+  loadCandidates();
+}
 function skipCand(id){ST.skippedCands.add(id);const el=document.getElementById('cc'+id);if(el){el.style.transition='all .3s';el.style.opacity='0';el.style.transform='translateX(-16px)';setTimeout(loadCandidates,300);}}
 function showCandInfo(id){const c=CANDS.find(x=>x.id===id);if(!c)return;document.getElementById('infoContent').innerHTML=`<div class="im-head"><div class="im-av">${c.ini}</div><div><div class="im-name">${c.name}</div><div class="im-role">${c.role}</div></div></div><div class="im-bio">${c.bio}</div><span class="im-lbl">Skills</span><div class="im-tags">${c.skills.map(s=>`<span class="tag tag-t">${s}</span>`).join('')}</div><span class="im-lbl">Sprachen</span><div class="im-tags" style="margin-bottom:1.1rem">${c.langs.map(l=>`<span class="tag tag-i">${l}</span>`).join('')}</div><button class="im-cta" onclick="contactCand(${c.id},'${c.name}');closeModal('infoModal')">✉ Jetzt kontaktieren</button>`;openModal('infoModal');}
 const sb=supabase.createClient('https://eyqngqkhpovcahonriec.supabase.co','sb_publishable_Fe_hs2GC7_4bJ5mTNhwXww_WWa7JtId');
@@ -895,6 +912,27 @@ async function saveMatch(job){if(!currentUser)return;await sb.from('matches').in
 async function init(){const{data:{session}}=await sb.auth.getSession();if(session?.user)await onLogin(session.user);setTimeout(()=>openModal('dsgvoModal'),800);sb.auth.onAuthStateChange((_,session)=>{if(session?.user){currentUser=session.user;updateNav(session.user);}else{currentUser=null;updateNav(null);}});}
 init();renderCards();loadCandidates();
 </script>
+
+<div class="modal-ov" id="contactModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('contactModal')">✕</button>
+    <div style="font-family:'Fraunces',serif;font-size:1.2rem;font-weight:700;color:var(--ink);margin-bottom:.3rem">✉ Kandidat kontaktieren</div>
+    <p style="font-size:.82rem;color:var(--muted);margin-bottom:1.3rem" id="contactCandName">—</p>
+    <div class="form-group">
+      <label class="form-label">Ihre Einrichtung</label>
+      <input class="form-input" type="text" id="contactFrom" placeholder="z.B. Klinikum Stuttgart GmbH">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Ihre E-Mail</label>
+      <input class="form-input" type="email" id="contactEmail" placeholder="hr@klinikum.de">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Nachricht</label>
+      <textarea class="form-input" id="contactMsg" rows="4" placeholder="Sehr geehrte/r Bewerber/in, wir haben Ihr Profil auf Heilberuf.de gesehen und möchten Sie gerne kennenlernen..." style="resize:vertical"></textarea>
+    </div>
+    <button class="auth-btn" onclick="sendContact()">✉ Anfrage senden</button>
+  </div>
+</div>
 </body>
 </html>
 v2
