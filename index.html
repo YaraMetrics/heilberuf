@@ -1134,6 +1134,7 @@ async function doLogout(){await sb.auth.signOut();currentUser=null;updateNav(nul
 async function onLogin(user){
  currentUser=user;
  updateNav(user);
+ loadMatchesFromStorage();
  // Load avatar if saved
  const saved = JSON.parse(localStorage.getItem('heilberuf_profile') || '{}');
  if(saved.avatar){
