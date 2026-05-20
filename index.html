@@ -669,7 +669,9 @@ function addToMatchesList(job){
   div.className = 'match-item';
   div.id = 'match-item-'+job.id;
   div.innerHTML = `<div class="match-item-title">${job.title}</div><div class="match-item-org">🏥 ${job.org} · 📍 ${job.city||job.location||''}</div>`;
-  if(job.url) div.onclick = () => window.open(job.url, '_blank');
+  const jobUrl = job.url || `https://www.arbeitsagentur.de/jobsuche/suche?was=${encodeURIComponent(job.title)}&wo=${encodeURIComponent(job.city||'')}`;
+  div.onclick = () => window.open(jobUrl, '_blank');
+  div.style.cursor = 'pointer';
   list.appendChild(div);
 }
 
