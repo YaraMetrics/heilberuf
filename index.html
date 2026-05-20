@@ -677,7 +677,13 @@ function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t
 
 function openProfile(){
   if(!currentUser) return;
-  document.getElementById('profileAvatar').textContent = (currentUser.email||'?').substring(0,2).toUpperCase();
+  const savedP = JSON.parse(localStorage.getItem('heilberuf_profile') || '{}');
+ const av = document.getElementById('profileAvatar');
+ if(savedP.avatar){
+   av.innerHTML = `<img src="${savedP.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+ } else {
+   av.textContent = (currentUser.email||'?').substring(0,2).toUpperCase();
+ }
   document.getElementById('profileName').textContent = currentUser.email?.split('@')[0] || '—';
   document.getElementById('profileEmail').textContent = currentUser.email || '—';
   // Load saved data
@@ -735,6 +741,34 @@ function showCitySuggestions2(val){
 
 
 const SKILL_LIST = ['Power BI','SQL','SAP','Excel','Python','MS Fabric','Tableau','DATEV','Medizincontrolling','DRG','ICD-10','KIS','Orbis','Pflegedokumentation','MDK','Vivendi','Medifox','Altenpflege','Krankenpflege','Intensivpflege','OP-Pflege','Physiotherapie','Ergotherapie','Logopädie','LIMS','PCR','Mikrobiologie','MTA','PTA','Apothekensoftware','Jira','FHIR','HL7','DSGVO'];
+
+
+function uploadAvatar(input){
+ if(!input.files[0]) return;
+ const reader = new FileReader();
+ reader.onload = function(e){
+   const img = document.createElement('img');
+   img.src = e.target.result;
+   img.style = 'width:100%;height:100%;object-fit:cover;border-radius:50%';
+   const av = document.getElementById('profileAvatar');
+   av.innerHTML = '';
+   av.appendChild(img);
+   // Save to localStorage
+   const saved = JSON.parse(localStorage.getItem('heilberuf_profile') || '{}');
+   localStorage.setItem('heilberuf_profile', JSON.stringify({...saved, avatar: e.target.result}));
+   // Update nav avatar too
+   const navAv = document.getElementById('userAv');
+   if(navAv){
+     navAv.innerHTML = '';
+     const navImg = document.createElement('img');
+     navImg.src = e.target.result;
+     navImg.style = 'width:100%;height:100%;object-fit:cover;border-radius:50%';
+     navAv.appendChild(navImg);
+   }
+   toast('✓ Profilbild gespeichert!');
+ };
+ reader.readAsDataURL(input.files[0]);
+}
 
 function loadProfileKenntnisse(){
   const saved = JSON.parse(localStorage.getItem('heilberuf_profile') || '{}');
@@ -1090,7 +1124,11 @@ init();renderCards();loadCandidates();
       <!-- Header -->
       <div style="background:white;border-radius:24px;padding:2rem;margin-bottom:1.5rem;border:1px solid var(--border)">
         <div style="display:flex;align-items:center;gap:1.2rem;margin-bottom:1.5rem">
-          <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--ink),var(--teal));display:flex;align-items:center;justify-content:center;color:white;font-size:1.4rem;font-weight:700" id="profileAvatar">?</div>
+         <div style="position:relative;cursor:pointer" onclick="document.getElementById('avatarInput').click()">
+           <div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--ink),var(--teal));display:flex;align-items:center;justify-content:center;color:white;font-size:1.4rem;font-weight:700;overflow:hidden" id="profileAvatar">?</div>
+           <div style="position:absolute;bottom:0;right:0;width:22px;height:22px;border-radius:50%;background:var(--teal);border:2px solid white;display:flex;align-items:center;justify-content:center;font-size:.65rem">📷</div>
+           <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="uploadAvatar(this)">
+         </div>
           <div>
             <div style="font-family:'Fraunces',serif;font-size:1.4rem;font-weight:700;color:var(--ink)" id="profileName">—</div>
             <div style="font-size:.82rem;color:var(--muted)" id="profileEmail">—</div>
