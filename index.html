@@ -634,13 +634,13 @@ footer{background:var(--ink);color:rgba(255,255,255,.4);padding:1.6rem 3rem;disp
               <div class="fchip" onclick="tc(this)">SAP</div>
               <div class="fchip" onclick="tc(this)">Excel</div>
             </div></div>
-            <div class="fg"><label class="flbl">Sprachen</label><div class="fchips">
-             <div class="fchip on" onclick="tc(this)">Deutsch C1</div>
-             <div class="fchip" onclick="tc(this)">Deutsch B2</div>
-             <div class="fchip" onclick="tc(this)">Deutsch B1</div>
-             <div class="fchip" onclick="tc(this)">Englisch C1</div>
-             <div class="fchip" onclick="tc(this)">Englisch B2</div>
-             <div class="fchip" onclick="tc(this)">Englisch B1</div>
+            <div class="fg"><label class="flbl">Sprachen</label><div class="fchips" style="display:grid;grid-template-columns:1fr 1fr;gap:.3rem">
+             <div class="fchip on" onclick="tc(this)">🇩🇪 Deutsch C1</div>
+             <div class="fchip" onclick="tc(this)">🇬🇧 Englisch C1</div>
+             <div class="fchip" onclick="tc(this)">🇩🇪 Deutsch B2</div>
+             <div class="fchip" onclick="tc(this)">🇬🇧 Englisch B2</div>
+             <div class="fchip" onclick="tc(this)">🇩🇪 Deutsch B1</div>
+             <div class="fchip" onclick="tc(this)">🇬🇧 Englisch B1</div>
            </div></div>
             <div class="fg"><label class="flbl">Min. Erfahrung: <b id="expV">2</b> J.</label><div class="frange"><span>0</span><input type="range" min="0" max="10" value="2" oninput="document.getElementById('expV').textContent=this.value"><span>10</span></div></div>
             <button class="btn-search" onclick="loadCandidates()">🔍 Kandidaten suchen</button>
