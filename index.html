@@ -820,11 +820,11 @@ function updateKenntnisse(){
   const chips = document.getElementById('kenntnisseChips');
   if(!chips) return;
   let kenntnisse = [];
-  if(fields.some(f=>f.includes('IT')||f.includes('Controlling'))) kenntnisse.push(...['Power BI','SQL','SAP','Excel','MS Fabric','Python']);
-  if(fields.some(f=>f.includes('Pflege'))) kenntnisse.push(...['Pflegedokumentation','MDK','Vivendi','DAN']);
-  if(fields.some(f=>f.includes('Medizin'))) kenntnisse.push(...['Arztbriefe','ICD-10','Medizinische Dokumentation']);
-  if(fields.some(f=>f.includes('Labor'))) kenntnisse.push(...['LIMS','Laboranalytik','Mikrobiologie','MTA']);
-  if(kenntnisse.length === 0) kenntnisse = ['Power BI','SQL','SAP','Excel'];
+  if(fields.some(f=>f.includes('IT')||f.includes('Controlling'))) kenntnisse.push(...['Power BI','SQL','SAP','Excel','MS Fabric','Python','Tableau','QlikView','DATEV','Medizincontrolling','DRG','ICD-10','OPS','KIS','Agfa','Orbis']);
+  if(fields.some(f=>f.includes('Pflege'))) kenntnisse.push(...['Pflegedokumentation','MDK','Vivendi','DAN','Care4','Medifox','SIS','Pflegeplanung','Altenpflege','Krankenpflege','Wundversorgung','Palliativpflege']);
+  if(fields.some(f=>f.includes('Medizin'))) kenntnisse.push(...['ICD-10','OPS','Arztbriefe','Anamnese','Physiotherapie','Ergotherapie','Logopädie','Psychotherapie','Sonographie','EKG','Labordiagnostik']);
+  if(fields.some(f=>f.includes('Labor'))) kenntnisse.push(...['LIMS','PCR','Mikrobiologie','Hämatologie','Klinische Chemie','Histologie','Zytologie','MTA','PTA','BTA','Apothekensoftware','ABDA']);
+  if(kenntnisse.length === 0) kenntnisse = ['Power BI','SQL','SAP','Excel','MS Fabric','Python'];
   chips.innerHTML = kenntnisse.map((k,i)=>`<div class="fchip${i<2?' on':''}" onclick="tc(this)">${k}</div>`).join('');
 }
 function loadCandidates(){const list=document.getElementById('candList');list.innerHTML='';const vis=CANDS.filter(c=>!ST.skippedCands.has(c.id));document.getElementById('hCnt').textContent=`${vis.length} gefunden`;vis.forEach(c=>{const card=document.createElement('div');card.className='cand-card'+(ST.contactedCands.has(c.id)?' ok':'');card.id='cc'+c.id;card.innerHTML=`<div class="ct"><div class="cav">${c.ini}</div><div class="cn"><div class="cn-name">${c.name}</div><div class="cn-role">${c.role}</div></div><div class="cs"><div class="cs-pct">${c.score}%</div><div class="cs-lbl">Match</div></div></div><div class="cand-tags">${c.skills.map(s=>`<span class="tag tag-t">${s}</span>`).join('')}${c.langs.map(l=>`<span class="tag tag-i">${l}</span>`).join('')}<span class="tag tag-m">📍${c.city}</span></div><div class="c-bar"><div class="c-fill" style="width:${c.score}%"></div></div><div class="ca"><button class="ca-btn ca-contact" onclick="contactCand(${c.id},'${c.name}')">${ST.contactedCands.has(c.id)?'✓ Kontaktiert':'✉ Kontaktieren'}</button><button class="ca-btn ca-prof" onclick="showCandInfo(${c.id})">Profil →</button><button class="ca-btn ca-skip" onclick="skipCand(${c.id})">✕</button></div>`;list.appendChild(card);});}
