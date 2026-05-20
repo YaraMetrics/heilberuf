@@ -635,13 +635,17 @@ footer{background:var(--ink);color:rgba(255,255,255,.4);padding:1.6rem 3rem;disp
               <div class="fchip" onclick="tc(this)">Excel</div>
             </div></div>
             <div class="fg"><label class="flbl">Sprachen</label><div class="fchips" style="display:grid;grid-template-columns:1fr 1fr;gap:.3rem">
-             <div class="fchip on" onclick="tc(this)">🇩🇪 Deutsch C1</div>
-             <div class="fchip" onclick="tc(this)">🇬🇧 Englisch C1</div>
-             <div class="fchip" onclick="tc(this)">🇩🇪 Deutsch B2</div>
-             <div class="fchip" onclick="tc(this)">🇬🇧 Englisch B2</div>
-             <div class="fchip" onclick="tc(this)">🇩🇪 Deutsch B1</div>
-             <div class="fchip" onclick="tc(this)">🇬🇧 Englisch B1</div>
-           </div></div>
+              <div class="fchip on" onclick="tc(this)">🇩🇪 Deutsch C1</div>
+              <div class="fchip" onclick="tc(this)">🇬🇧 Englisch C1</div>
+              <div class="fchip" onclick="tc(this)">🇩🇪 Deutsch B2</div>
+              <div class="fchip" onclick="tc(this)">🇬🇧 Englisch B2</div>
+              <div class="fchip" onclick="tc(this)">🇩🇪 Deutsch B1</div>
+              <div class="fchip" onclick="tc(this)">🇬🇧 Englisch B1</div>
+            </div>
+            <div style="margin-top:.5rem;display:flex;gap:.4rem;align-items:center">
+              <input id="langSearch" type="text" placeholder="Weitere Sprache..." style="flex:1;padding:.35rem .7rem;border:1.5px solid var(--border);border-radius:20px;font-family:inherit;font-size:.75rem;outline:none" onkeydown="if(event.key==='Enter')addLang()">
+              <button onclick="addLang()" style="background:var(--teal);color:white;border:none;border-radius:20px;padding:.35rem .8rem;font-size:.75rem;cursor:pointer;font-weight:600">+ Hinzufügen</button>
+            </div></div>
             <div class="fg"><label class="flbl">Min. Erfahrung: <b id="expV">2</b> J.</label><div class="frange"><span>0</span><input type="range" min="0" max="10" value="2" oninput="document.getElementById('expV').textContent=this.value"><span>10</span></div></div>
             <button class="btn-search" onclick="loadCandidates()">🔍 Kandidaten suchen</button>
           </div>
@@ -813,6 +817,20 @@ function renderCards(){const stack=document.getElementById('sStack');stack.inner
 function animateOut(el,dir){const x=dir==='right'?600:dir==='super'?0:-600,y=dir==='super'?-600:0;el.style.transition='transform .4s ease,opacity .4s';el.style.transform=`translateX(${x}px) translateY(${y}px) rotate(${dir==='right'?25:dir==='left'?-25:0}deg)`;el.style.opacity='0';if(dir==='right'||dir==='super'){const allJobs=ST.realJobs&&ST.realJobs.length>0?ST.realJobs:JOBS;const job=allJobs[ST.cardIndex];addMatch();toast(dir==='super'?`⭐ Super Like für ${job?.org}!`:`♥ Match mit ${job?.org}!`);if(job)saveMatch(job);}ST.cardIndex++;setTimeout(renderCards,350);}
 function swipe(dir){const front=document.querySelector('.s-card.front');if(front)animateOut(front,dir);}
 function resetSwipe(){ST.cardIndex=0;renderCards();}
+
+function addLang(){
+  const input = document.getElementById('langSearch');
+  const val = input.value.trim();
+  if(!val) return;
+  const chips = input.closest('.fg').querySelector('.fchips');
+  const div = document.createElement('div');
+  div.className = 'fchip on';
+  div.onclick = function(){tc(this)};
+  div.textContent = val;
+  chips.appendChild(div);
+  input.value = '';
+}
+
 function tc(el){
   el.classList.toggle('on');
   // If berufsfeld chip changed, update kenntnisse
