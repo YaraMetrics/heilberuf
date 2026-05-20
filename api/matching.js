@@ -6,14 +6,13 @@ export default async function handler(req, res) {
 
   const { cvText, keywords, city, umkreis } = req.body || {};
 
-  // Fetch real jobs from Bundesagentur
   let realJobs = [];
-  const searches = [keywords || 'Gesundheitswesen', 'Pflege', 'Krankenhaus'];
-  
+  const searches = (keywords || 'Gesundheitswesen').split(' ').filter(k => k.length > 3).slice(0, 3);
+  if(searches.length === 0) searches.push('Gesundheitswesen');
+
   for(const kw of searches) {
-    if(realJobs.length >= 4) break;
     try {
-      let url = `https://rest.arbeitsagentur.de/jobboerse/jobsuche-service/pc/v4/jobs?was=${encodeURIComponent(kw)}&size=10`;
+      let url = `https://rest.arbeitsagentur.de/jobboerse/jobsuche-service/pc/v4/jobs?was=${encodeURIComponent(kw)}&size=25`;
       if(city) url += `&wo=${encodeURIComponent(city)}`;
       if(umkreis) url += `&umkreis=${umkreis}`;
       const r = await fetch(url, { headers: { 'X-API-Key': 'jobboerse-jobsuche' } });
@@ -22,20 +21,34 @@ export default async function handler(req, res) {
         id: realJobs.length + i + 1,
         org: j.arbeitgeber || 'Klinik',
         location: j.arbeitsort?.ort || city || 'Deutschland',
-        contract: 'Vollzeit',
+        contract: j.arbeitszeit || 'Vollzeit',
         title: j.titel || 'Stelle im Gesundheitswesen',
-        tags: [kw, city || 'Deutschland'].filter(Boolean),
-        matchScore: 90 - (realJobs.length + i) * 4,
+        tags: [kw, j.arbeitsort?.ort || 'Deutschland'].filter(Boolean),
+        matchScore: Math.max(50, 95 - (realJobs.length + i) * 3),
         reasons: ['Aktuelle Stelle auf Bundesagentur', 'Passend zu Ihrem Profil', 'Direkt bewerben möglich'],
         icon: '🏥',
         salary: '',
         url: j.refnr ? `https://www.arbeitsagentur.de/jobsuche/jobdetail/${j.refnr}` : ''
       }));
-      realJobs = [...realJobs, ...jobs].slice(0, 10);
+      realJobs = [...realJobs, ...jobs];
     } catch(e) {}
   }
 
-  // AI profile extraction
+  // Remove duplicates by title
+  const seen = new Set();
+  realJobs = realJobs.filter(j => {
+    if(seen.has(j.title)) return false;
+    seen.add(j.title);
+    return true;
+  });
+
+  // Sort by matchScore, show all above 50%
+  realJobs = realJobs
+    .filter(j => j.matchScore >= 50)
+    .sort((a, b) => b.matchScore - a.matchScore)
+    .slice(0, 30);
+
+  // AI profile
   let profile = { name: 'Bewerber/in', mainRole: 'Fachkraft Gesundheitswesen', skills: ['Gesundheitswesen'], languages: ['Deutsch'] };
   try {
     const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
