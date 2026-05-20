@@ -757,7 +757,13 @@ function likeJob(id){const card=document.getElementById('jcr'+id);const job=JOBS
   const loc = card.querySelector('.jc-oloc')?.textContent || '';
   const applyBtn = card.querySelector('.jc-apply');
   const url = applyBtn?.href || applyBtn?.getAttribute('onclick') || '';
-  addToMatchesList({id, title, org, city: loc, url: applyBtn?.href || ''});
+  addToMatchesList({
+    id: id,
+    title: card.querySelector('.jc-title')?.innerText?.trim() || '',
+    org: card.querySelector('.jc-oname')?.innerText?.trim() || '',
+    city: card.querySelector('.jc-oloc')?.innerText?.replace('📍','').split('·')[0]?.trim() || '',
+    url: card.querySelector('a.jc-apply')?.href || ''
+  });
   toast('♥ Stelle gemerkt!');
   saveMatch(job);
 }}
