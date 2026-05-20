@@ -434,7 +434,10 @@ footer{background:var(--ink);color:rgba(255,255,255,.4);padding:1.6rem 3rem;disp
     <div class="matches-dropdown">
   <div class="nav-badge matches-btn" id="navBadge" onclick="toggleMatches()">♥ 0 Matches</div>
   <div class="matches-list" id="matchesList">
-    <div class="matches-empty" id="matchesEmpty">Noch keine Matches — liken Sie Stellen!</div>
+    <div style="padding:.5rem .7rem .7rem;border-bottom:1px solid var(--border);margin-bottom:.4rem">
+  <div style="font-size:.78rem;font-weight:700;color:var(--ink)">♥ Gespeicherte Stellen</div>
+</div>
+<div class="matches-empty" id="matchesEmpty" style="padding:1rem;text-align:center;font-size:.82rem;color:var(--muted)">Noch keine Matches — liken Sie Stellen!</div>
   </div>
 </div>
     <div id="navAuth"><button class="nav-cta" onclick="navigate('login')">Anmelden →</button></div>
