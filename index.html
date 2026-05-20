@@ -566,7 +566,8 @@ footer{background:var(--ink);color:rgba(255,255,255,.4);padding:1.6rem 3rem;disp
       <p class="pan-sub">Geben Sie Ihren gewünschten Standort an.</p>
       <div class="loc-tip">📍 Feld leer lassen für bundesweite Suche.</div>
       <div class="loc-grid">
-        <div><label class="loc-lbl">Stadt</label><div class="loc-wrap"><span class="loc-ico">🏙️</span><input class="loc-input" type="text" id="cityInput" placeholder="z.B. Stuttgart, Ulm..."></div></div>
+        <div><label class="loc-lbl">Stadt</label><div class="loc-wrap"><span class="loc-ico">🏙️</span><input class="loc-input" type="text" id="cityInput" placeholder="z.B. Stuttgart, Ulm..." oninput="showCitySuggestions(this.value)" autocomplete="off">
+<div id="citySuggestions" style="position:absolute;top:100%;left:0;right:0;background:white;border-radius:12px;box-shadow:0 16px 40px rgba(13,27,42,.15);border:1px solid var(--border);z-index:400;max-height:200px;overflow-y:auto;display:none;margin-top:4px"></div></div></div>
         <div><label class="loc-lbl">Umkreis</label><select class="loc-sel" id="umkreisSelect"><option value="25">25 km</option><option value="50" selected>50 km</option><option value="100">100 km</option><option value="200">200 km</option><option value="">Deutschlandweit</option></select></div>
       </div>
       <div style="display:flex;gap:.7rem">
@@ -675,6 +676,28 @@ function navigate(page){document.querySelectorAll('.page').forEach(p=>p.classLis
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
 function openModal(id){document.getElementById(id).classList.add('show');}
 function closeModal(id){document.getElementById(id).classList.remove('show');}
+
+
+const DE_CITIES = ['Berlin','Hamburg','München','Köln','Frankfurt am Main','Stuttgart','Düsseldorf','Leipzig','Dortmund','Essen','Bremen','Dresden','Hannover','Nürnberg','Duisburg','Bochum','Wuppertal','Bielefeld','Bonn','Münster','Karlsruhe','Mannheim','Augsburg','Wiesbaden','Mönchengladbach','Gelsenkirchen','Aachen','Braunschweig','Kiel','Chemnitz','Halle','Magdeburg','Freiburg im Breisgau','Krefeld','Lübeck','Oberhausen','Erfurt','Mainz','Rostock','Kassel','Hagen','Hamm','Saarbrücken','Mülheim an der Ruhr','Potsdam','Ludwigshafen','Oldenburg','Leverkusen','Osnabrück','Solingen','Heidelberg','Darmstadt','Paderborn','Regensburg','Ingolstadt','Würzburg','Heilbronn','Ulm','Pforzheim','Wolfsburg','Offenbach','Göttingen','Bottrop','Recklinghausen','Reutlingen','Bremerhaven','Koblenz','Bergisch Gladbach','Jena','Remscheid','Erlangen','Moers','Siegen','Hildesheim','Salzgitter','Cottbus','Kaiserslautern','Schwerin','Herne','Gütersloh','Iserlohn','Düren','Trier','Konstanz','Lüneburg','Lingen','Dessau','Norderstedt','Villingen-Schwenningen','Zwickau','Fürth','Marl','Worms','Neuss','Marburg','Memmingen','Aschaffenburg','Norderstedt','Bamberg','Bayreuth','Landshut','Ravensburg','Sindelfingen','Ludwigsburg','Tübingen','Flensburg','Ratingen','Oberhausen','Troisdorf','Gießen','Witten','Kempten'];
+
+function showCitySuggestions(val){
+  const box = document.getElementById('citySuggestions');
+  if(!val || val.length < 1){box.style.display='none';return;}
+  const matches = DE_CITIES.filter(c=>c.toLowerCase().startsWith(val.toLowerCase())).slice(0,8);
+  if(!matches.length){box.style.display='none';return;}
+  box.innerHTML = matches.map(c=>`<div style="padding:.5rem .9rem;cursor:pointer;font-size:.85rem;color:var(--ink);transition:background .15s" onmouseover="this.style.background='var(--teal-pale)'" onmouseout="this.style.background=''" onclick="selectCity('${c}')">${c}</div>`).join('');
+  box.style.display='block';
+}
+function selectCity(city){
+  document.getElementById('cityInput').value = city;
+  document.getElementById('citySuggestions').style.display='none';
+}
+document.addEventListener('click', e=>{
+  if(!e.target.closest('#cityInput') && !e.target.closest('#citySuggestions')){
+    const box = document.getElementById('citySuggestions');
+    if(box) box.style.display='none';
+  }
+});
 
 function toggleMatches(){
   document.getElementById('matchesList').classList.toggle('show');
