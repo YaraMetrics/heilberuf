@@ -1011,24 +1011,16 @@ function loadMatchesFromStorage(){
 function likeJob(id){const card=document.getElementById('jcr'+id);const job=JOBS.find(j=>j.id===id)||{id,title:'Stelle',org:'Klinik',city:'Ulm',score:80};if(ST.likedJobs.has(id)){ST.likedJobs.delete(id);card.classList.remove('liked');document.getElementById('match-item-'+id)?.remove();saveMatchesToStorage();}else{
   ST.likedJobs.add(id);
   card.classList.add('liked');
+  const title = card.querySelector('.jc-title')?.textContent?.trim() || '';
+  const org = card.querySelector('.jc-oname')?.textContent?.trim() || '';
+  const city = card.querySelector('.jc-oloc')?.textContent?.replace('📍','').split('·')[0]?.trim() || '';
+  const url = card.querySelector('a.jc-apply')?.href || '';
+  const realJob = {id, title, org, city, url};
+  addToMatchesList(realJob);
   addMatch();
-  // Get real job data from card
-  const title = card.querySelector('.jc-title')?.textContent || job.title;
-  const org = card.querySelector('.jc-oname')?.textContent || job.org;
-  const loc = card.querySelector('.jc-oloc')?.textContent || '';
-  const applyBtn = card.querySelector('.jc-apply');
-  const url = applyBtn?.href || applyBtn?.getAttribute('onclick') || '';
-  addToMatchesList({
-    id: id,
-    title: card.querySelector('.jc-title')?.innerText?.trim() || '',
-    org: card.querySelector('.jc-oname')?.innerText?.trim() || '',
-    city: card.querySelector('.jc-oloc')?.innerText?.replace('📍','').split('·')[0]?.trim() || '',
-    url: card.querySelector('a.jc-apply')?.href || ''
-  });
-  toast('♥ Stelle gemerkt!');
-  saveMatch(job);
-}}
-function skipJob(id){const el=document.getElementById('jcr'+id);el.style.transition='all .3s';el.style.opacity='0';el.style.transform='translateX(-16px)';setTimeout(()=>el.remove(),300);}
+  const allSaved = JSON.parse(localStorage.getItem('heilberuf_matches_v2') || '[]');
+  if(!allSaved.find(j=>j.title===title)){ allSaved.push(realJob); localStorage.setItem('heilberuf_matches_v2', JSON.stringify(allSaved)); }
+  toast('♥ Stelle gemerkt!');saveMatch(job);unction skipJob(id){const el=document.getElementById('jcr'+id);el.style.transition='all .3s';el.style.opacity='0';el.style.transform='translateX(-16px)';setTimeout(()=>el.remove(),300);}
 function resetAll(){removeFile();document.getElementById('consentChk').checked=false;document.querySelectorAll('.bf-card').forEach(c=>c.classList.remove('selected'));if(document.getElementById('cityInput'))document.getElementById('cityInput').value='';if(document.getElementById('umkreisSelect'))document.getElementById('umkreisSelect').value='50';ST.selectedFields.clear();ST.selectedKeywords='';document.getElementById('bfBtn').disabled=true;['ls1','ls2','ls3','ls4'].forEach((id,i)=>{const el=document.getElementById(id);if(el){el.className='l-step'+(i===0?' active':'');el.querySelector('.l-chk').textContent=i===0?'→':i+1;}});goStep(0);}
 function setSwipeMode(mode){document.getElementById('sv-bew').classList.toggle('active',mode==='bew');document.getElementById('sv-hosp').classList.toggle('active',mode==='hosp');document.getElementById('mb-bew').classList.toggle('active',mode==='bew');document.getElementById('mb-hosp').classList.toggle('active',mode==='hosp');}
 async function loadRealJobs(){try{const res=await fetch('/api/matching',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cvText:'Pflegefachkraft Data Analyst Gesundheitswesen',keywords:ST.selectedKeywords||'Gesundheitswesen',city:'',umkreis:'100'})});const data=await res.json();if(data&&data.jobs&&data.jobs.length>0){ST.realJobs=data.jobs.map((j,i)=>({id:100+i,org:j.org,city:j.location||'Deutschland',icon:'🏥',contract:j.contract||'Vollzeit',salary:'',title:j.title,tags:j.tags||['Gesundheitswesen'],score:j.matchScore||80,reasons:j.reasons||['Aktuelle Stelle','Direkt bewerben möglich'],url:j.url||''}));ST.cardIndex=0;renderCards();}}catch(e){}}
