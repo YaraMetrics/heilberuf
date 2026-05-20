@@ -1002,7 +1002,13 @@ function renderCards(){const stack=document.getElementById('sStack');stack.inner
 function animateOut(el,dir){const x=dir==='right'?600:dir==='super'?0:-600,y=dir==='super'?-600:0;el.style.transition='transform .4s ease,opacity .4s';el.style.transform=`translateX(${x}px) translateY(${y}px) rotate(${dir==='right'?25:dir==='left'?-25:0}deg)`;el.style.opacity='0';if(dir==='right'){const allJobs=ST.realJobs&&ST.realJobs.length>0?ST.realJobs:JOBS;const job=allJobs[ST.cardIndex];if(dir==='super'){
     // Super Like = open Bundesagentur directly
     const applyUrl = (job?.url && job.url.startsWith('http')) ? job.url : `https://www.arbeitsagentur.de/jobsuche/suche?was=${encodeURIComponent(job?.title||'')}&wo=${encodeURIComponent(job?.city||'')}`;
-    window.open(applyUrl, '_blank');
+    const a = document.createElement('a');
+    a.href = applyUrl;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
     toast(`⭐ Direkt zur Bewerbung geöffnet!`);
   } else {
     addMatch();
