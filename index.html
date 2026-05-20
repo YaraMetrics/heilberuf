@@ -1016,7 +1016,17 @@ function animateOut(el,dir){const x=dir==='right'?600:dir==='super'?0:-600,y=dir
     addToMatchesList(job);
     toast(`♥ Match mit ${job?.org} gespeichert!`);
   }if(job)saveMatch(job);}ST.cardIndex++;setTimeout(renderCards,350);}
-function swipe(dir){const front=document.querySelector('.s-card.front');if(front)animateOut(front,dir);}
+function swipe(dir){
+  const front=document.querySelector('.s-card.front');
+  if(!front) return;
+  if(dir==='super'){
+    const allJobs=ST.realJobs&&ST.realJobs.length>0?ST.realJobs:JOBS;
+    const job=allJobs[ST.cardIndex];
+    const url=(job?.url&&job.url.startsWith('http'))?job.url:`https://www.arbeitsagentur.de/jobsuche/suche?was=${encodeURIComponent(job?.title||'')}&wo=${encodeURIComponent(job?.city||'')}`;
+    window.open(url,'_blank');
+  }
+  animateOut(front,dir);
+}
 function resetSwipe(){ST.cardIndex=0;renderCards();}
 
 
