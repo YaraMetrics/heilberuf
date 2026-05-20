@@ -669,11 +669,7 @@ const JOBS=[
   {id:6,org:'Klinikum Düsseldorf',city:'Düsseldorf',icon:'🏥',contract:'Teilzeit',salary:'€42–52k',title:'Qualitätsmanagement Analyst',tags:['Excel','ISO','Reporting'],score:73,reasons:['Analytisches Denken','QM-Erfahrung wertvoll','NRW-Region']},
 ];
 const CANDS=[
-  {id:1,ini:'YM',name:'Yara M.',role:'Data Analyst | ex-Pflegefachkraft',skills:['Power BI','SQL','Excel','SAP'],langs:['Deutsch','Arabisch','Englisch'],score:93,exp:'6 J.',city:'Ulm',bio:'IHK-zertifizierte Data Analyst mit Pflegehintergrund.'},
-  {id:2,ini:'TK',name:'Thomas K.',role:'IT-Koordinator Gesundheitswesen',skills:['Jira','MS Fabric','SAP'],langs:['Deutsch','Englisch'],score:85,exp:'8 J.',city:'Berlin',bio:'IT-Koordinator mit Schwerpunkt Krankenhaus-Digitalisierung.'},
-  {id:3,ini:'SF',name:'Sara F.',role:'Pflegefachkraft mit BI-Grundlagen',skills:['Excel','Power Query'],langs:['Deutsch','Französisch'],score:77,exp:'5 J.',city:'München',bio:'Pflegefachkraft mit Weiterbildung in Datenanalyse.'},
-  {id:4,ini:'MA',name:'Mohammed A.',role:'Prozessanalyst',skills:['SAP','Excel','BPMN'],langs:['Deutsch','Arabisch'],score:72,exp:'4 J.',city:'Hamburg',bio:'Prozessanalyst mit Erfahrung in klinischen Abläufen.'},
-  {id:5,ini:'LB',name:'Laura B.',role:'Medizincontrollerin',skills:['DRG','ICD-10','SAP'],langs:['Deutsch','Englisch'],score:68,exp:'3 J.',city:'Düsseldorf',bio:'Spezialisiert auf DRG-Abrechnung.'},
+ {id:1,ini:'👤',name:'Beispiel-Kandidat',role:'Echte Kandidaten erscheinen nach Registrierung',skills:['Power BI','SQL','SAP'],langs:['Deutsch','Englisch'],score:92,exp:'5 J.',city:'Deutschland',bio:'Dies ist ein Beispielprofil.'},
 ];
 function navigate(page){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById('page-'+page).classList.add('active');document.querySelectorAll('.nav-link').forEach(l=>l.classList.remove('active'));const nl=document.getElementById('nl-'+page);if(nl)nl.classList.add('active');window.scrollTo(0,0);if(page==='swipe'){loadRealJobs();loadCandidates();}}
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
