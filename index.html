@@ -691,10 +691,18 @@ function openProfile(){
       if(el) el.checked = true;
     });
   }
+  loadProfileKenntnisse();
   navigate('profile');
 }
 
 function saveProfile(){
+  const skills = Array.from(document.querySelectorAll('#profileKenntnisse .fchip')).map(c=>c.textContent.replace(' ✕','').trim());
+  const published = document.getElementById('publishToggle')?.checked || false;
+  const saved2 = JSON.parse(localStorage.getItem('heilberuf_profile') || '{}');
+  localStorage.setItem('heilberuf_profile', JSON.stringify({...saved2, skills, published}));
+  if(published) toast('🌐 Profil ist jetzt sichtbar!');
+
+
   const city = document.getElementById('profileCity').value.trim();
   const umkreis = document.getElementById('profileUmkreis').value;
   const fields = ['pflege','medizin','labor','it'].filter(f => document.getElementById('pf-'+f)?.checked);
@@ -724,6 +732,73 @@ function showCitySuggestions2(val){
   box.innerHTML=matches.map(c=>`<div style="padding:.5rem .9rem;cursor:pointer;font-size:.85rem;color:var(--ink)" onmouseover="this.style.background='var(--teal-pale)'" onmouseout="this.style.background=''" onclick="document.getElementById('profileCity').value='${c}';document.getElementById('citySuggestions2').style.display='none'">${c}</div>`).join('');
   box.style.display='block';
 }
+
+
+const SKILL_LIST = ['Power BI','SQL','SAP','Excel','Python','MS Fabric','Tableau','DATEV','Medizincontrolling','DRG','ICD-10','KIS','Orbis','Pflegedokumentation','MDK','Vivendi','Medifox','Altenpflege','Krankenpflege','Intensivpflege','OP-Pflege','Physiotherapie','Ergotherapie','Logopädie','LIMS','PCR','Mikrobiologie','MTA','PTA','Apothekensoftware','Jira','FHIR','HL7','DSGVO'];
+
+function loadProfileKenntnisse(){
+  const saved = JSON.parse(localStorage.getItem('heilberuf_profile') || '{}');
+  const fields = saved.fields || ['it'];
+  const map = {
+    'pflege': ['Pflegedokumentation','MDK','Vivendi','Medifox','SIS','Krankenpflege','Altenpflege','Intensivpflege','OP-Pflege'],
+    'medizin': ['ICD-10','OPS','Arztbriefe','Physiotherapie','Ergotherapie','Logopädie','Sonographie','EKG'],
+    'labor': ['LIMS','PCR','Mikrobiologie','Hämatologie','MTA','PTA','ISO 15189'],
+    'it': ['Power BI','SQL','SAP','Excel','MS Fabric','Python','DRG','ICD-10 Kodierung','KIS','Orbis']
+  };
+  let defaults = [];
+  fields.forEach(f => { if(map[f]) defaults.push(...map[f]); });
+  if(defaults.length === 0) defaults = map['it'];
+  const savedSkills = saved.skills || defaults.slice(0,5);
+  const chips = document.getElementById('profileKenntnisse');
+  if(!chips) return;
+  chips.innerHTML = savedSkills.map(s=>`<div class="fchip on" onclick="removeSkill(this)" title="Klicken zum Entfernen" style="cursor:pointer">${s} ✕</div>`).join('');
+}
+
+function removeSkill(el){ el.remove(); }
+
+function addProfileSkill(){
+  const input = document.getElementById('profileSkillInput');
+  const val = input.value.trim();
+  if(!val) return;
+  const chips = document.getElementById('profileKenntnisse');
+  const div = document.createElement('div');
+  div.className = 'fchip on';
+  div.style.cursor = 'pointer';
+  div.title = 'Klicken zum Entfernen';
+  div.textContent = val + ' ✕';
+  div.onclick = function(){ this.remove(); };
+  chips.appendChild(div);
+  input.value = '';
+  document.getElementById('skillSugg').style.display = 'none';
+}
+
+function showSkillSugg(val){
+  const box = document.getElementById('skillSugg');
+  if(!val||val.length<1){box.style.display='none';return;}
+  const matches = SKILL_LIST.filter(s=>s.toLowerCase().includes(val.toLowerCase())).slice(0,6);
+  if(!matches.length){box.style.display='none';return;}
+  box.innerHTML = matches.map(s=>`<div style="padding:.45rem .8rem;cursor:pointer;font-size:.78rem;color:var(--ink)" onmouseover="this.style.background='var(--teal-pale)'" onmouseout="this.style.background=''" onclick="document.getElementById('profileSkillInput').value='${s}';document.getElementById('skillSugg').style.display='none';addProfileSkill()">${s}</div>`).join('');
+  box.style.display='block';
+}
+
+function togglePublish(checked){
+  const track = document.getElementById('publishTrack');
+  const thumb = document.getElementById('publishThumb');
+  const label = document.getElementById('publishLabel');
+  if(checked){
+    track.style.background = 'var(--teal)';
+    thumb.style.transform = 'translateX(20px)';
+    label.textContent = '✓ Profil sichtbar für Einrichtungen';
+    label.style.color = 'var(--teal2)';
+  } else {
+    track.style.background = 'rgba(255,255,255,.2)';
+    thumb.style.transform = 'translateX(0)';
+    label.textContent = 'Profil nicht sichtbar';
+    label.style.color = 'rgba(255,255,255,.8)';
+  }
+}
+
+const _origSaveProfile = saveProfile;
 
 function openModal(id){document.getElementById(id).classList.add('show');}
 function closeModal(id){document.getElementById(id).classList.remove('show');}
@@ -1067,6 +1142,31 @@ init();renderCards();loadCandidates();
           <label style="display:flex;align-items:center;gap:.7rem;cursor:pointer;padding:.5rem;border-radius:10px;transition:background .2s" onmouseover="this.style.background='var(--teal-pale)'" onmouseout="this.style.background=''"><input type="checkbox" id="pf-labor" style="accent-color:var(--teal);width:15px;height:15px"> 🔬 Labor, Apotheke & MTA</label>
           <label style="display:flex;align-items:center;gap:.7rem;cursor:pointer;padding:.5rem;border-radius:10px;transition:background .2s" onmouseover="this.style.background='var(--teal-pale)'" onmouseout="this.style.background=''"><input type="checkbox" id="pf-it" style="accent-color:var(--teal);width:15px;height:15px"> 💻 IT, Controlling & Verwaltung</label>
         </div>
+      </div>
+
+      <!-- Kenntnisse -->
+      <div style="background:white;border-radius:24px;padding:1.8rem;margin-bottom:1.2rem;border:1px solid var(--border)">
+        <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--teal);margin-bottom:.8rem">🛠️ Kenntnisse</div>
+        <div class="fchips" id="profileKenntnisse" style="gap:.35rem;flex-wrap:wrap"></div>
+        <div style="margin-top:.7rem;display:flex;gap:.4rem;align-items:center;position:relative">
+          <input type="text" id="profileSkillInput" placeholder="Weitere Kenntnisse..." style="flex:1;padding:.4rem .8rem;border:1.5px solid var(--border);border-radius:20px;font-family:inherit;font-size:.78rem;outline:none" oninput="showSkillSugg(this.value)" onkeydown="if(event.key==='Enter')addProfileSkill()">
+          <div id="skillSugg" style="position:absolute;top:100%;left:0;background:white;border-radius:12px;box-shadow:var(--shadow2);border:1px solid var(--border);z-index:100;min-width:200px;display:none;margin-top:4px"></div>
+          <button onclick="addProfileSkill()" style="background:var(--teal);color:white;border:none;border-radius:20px;padding:.4rem .9rem;font-size:.75rem;cursor:pointer;font-weight:600">+ Hinzufügen</button>
+        </div>
+      </div>
+
+      <!-- Publish -->
+      <div style="background:linear-gradient(135deg,var(--ink),var(--ink2));border-radius:24px;padding:1.8rem;margin-bottom:1.2rem">
+        <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--teal2);margin-bottom:.5rem">🌐 Profil veröffentlichen</div>
+        <p style="font-size:.83rem;color:rgba(255,255,255,.65);margin-bottom:1rem;line-height:1.6">Wenn Sie Ihr Profil veröffentlichen, können Einrichtungen Sie direkt kontaktieren.</p>
+        <label style="display:flex;align-items:center;gap:.8rem;cursor:pointer">
+          <div style="position:relative;width:46px;height:26px;flex-shrink:0">
+            <input type="checkbox" id="publishToggle" style="opacity:0;position:absolute;width:0;height:0" onchange="togglePublish(this.checked)">
+            <div id="publishTrack" style="position:absolute;inset:0;border-radius:20px;background:rgba(255,255,255,.2);transition:background .3s"></div>
+            <div id="publishThumb" style="position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:white;transition:transform .3s;box-shadow:0 2px 4px rgba(0,0,0,.2)"></div>
+          </div>
+          <span id="publishLabel" style="font-size:.85rem;font-weight:600;color:rgba(255,255,255,.8)">Profil nicht sichtbar</span>
+        </label>
       </div>
 
       <!-- Save Button -->
