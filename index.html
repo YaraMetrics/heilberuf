@@ -972,7 +972,20 @@ function filterJobs(val){
   document.getElementById('resCount').textContent = visible + ' passende Stellen gefunden';
 }
 
-function likeJob(id){const card=document.getElementById('jcr'+id);const job=JOBS.find(j=>j.id===id)||{id,title:'Stelle',org:'Klinik',city:'Ulm',score:80};if(ST.likedJobs.has(id)){ST.likedJobs.delete(id);card.classList.remove('liked');document.getElementById('match-item-'+id)?.remove();}else{
+function saveMatchesToStorage(){
+  localStorage.setItem('heilberuf_matches', JSON.stringify(Array.from(ST.likedJobs)));
+}
+function loadMatchesFromStorage(){
+  const saved = JSON.parse(localStorage.getItem('heilberuf_matches') || '[]');
+  saved.forEach(id => ST.likedJobs.add(id));
+  const count = saved.length;
+  if(count > 0){
+    document.getElementById('navBadge').textContent = `♥ ${count} Matches`;
+    document.getElementById('swipeCnt').textContent = `♥ ${count} Matches`;
+    ST.matchCount = count;
+  }
+}
+function likeJob(id){const card=document.getElementById('jcr'+id);const job=JOBS.find(j=>j.id===id)||{id,title:'Stelle',org:'Klinik',city:'Ulm',score:80};if(ST.likedJobs.has(id)){ST.likedJobs.delete(id);card.classList.remove('liked');document.getElementById('match-item-'+id)?.remove();saveMatchesToStorage();}else{
   ST.likedJobs.add(id);
   card.classList.add('liked');
   addMatch();
@@ -1135,7 +1148,7 @@ async function onLogin(user){
 function updateNav(user){const a=document.getElementById('navAuth'),u=document.getElementById('navUser');if(user){a.style.display='none';u.style.display='flex';document.getElementById('userAv').textContent=(user.email||'?').substring(0,2).toUpperCase();}else{a.style.display='flex';u.style.display='none';}}
 async function saveMatch(job){if(!currentUser)return;await sb.from('matches').insert({user_id:currentUser.id,job_title:job.title,job_org:job.org,job_location:job.city||job.location,match_score:job.score||job.matchScore,status:'liked'});}
 async function init(){const{data:{session}}=await sb.auth.getSession();if(session?.user)await onLogin(session.user);setTimeout(()=>openModal('dsgvoModal'),800);sb.auth.onAuthStateChange((_,session)=>{if(session?.user){currentUser=session.user;updateNav(session.user);}else{currentUser=null;updateNav(null);}});}
-init();renderCards();loadCandidates();
+init();loadMatchesFromStorage();renderCards();loadCandidates();
 </script>
 
 <div class="modal-ov" id="contactModal">
