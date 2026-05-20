@@ -1164,8 +1164,7 @@ async function onLogin(user){
 function updateNav(user){const a=document.getElementById('navAuth'),u=document.getElementById('navUser');if(user){a.style.display='none';u.style.display='flex';document.getElementById('userAv').textContent=(user.email||'?').substring(0,2).toUpperCase();}else{a.style.display='flex';u.style.display='none';}}
 async function saveMatch(job){if(!currentUser)return;await sb.from('matches').insert({user_id:currentUser.id,job_title:job.title,job_org:job.org,job_location:job.city||job.location,match_score:job.score||job.matchScore,status:'liked'});}
 async function init(){const{data:{session}}=await sb.auth.getSession();if(session?.user)await onLogin(session.user);setTimeout(()=>openModal('dsgvoModal'),800);sb.auth.onAuthStateChange((_,session)=>{if(session?.user){currentUser=session.user;updateNav(session.user);}else{currentUser=null;updateNav(null);}});}
-try{init();loadMatchesFromStorage();renderCards();loadCandidates();}catch(e){console.error('Init error:',e);}
-window.onerror = function(msg,src,line){console.error('JS Error:',msg,'line:',line);return false;};
+init();loadMatchesFromStorage();renderCards();loadCandidates();
 </script>
 
 <div class="modal-ov" id="contactModal">
