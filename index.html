@@ -813,19 +813,24 @@ function tc(el){
   if(berufsChips === 'Berufsfeld') updateKenntnisse();
 }
 function updateKenntnisse(){
-  const selected = Array.from(document.querySelectorAll('#kenntnisseChips')?.[0]?.closest('.filter-form')?.querySelectorAll('.fg') || [])
-    .find(fg => fg.querySelector('.flbl')?.textContent === 'Berufsfeld')
-    ?.querySelectorAll('.fchip.on');
-  const fields = Array.from(selected||[]).map(c=>c.textContent.trim());
   const chips = document.getElementById('kenntnisseChips');
   if(!chips) return;
+  const fgs = chips.closest('.filter-form').querySelectorAll('.fg');
+  let bfFg = null;
+  fgs.forEach(fg => { if(fg.querySelector('.flbl')?.textContent.includes('Berufsfeld')) bfFg = fg; });
+  const fields = Array.from(bfFg?.querySelectorAll('.fchip.on')||[]).map(c=>c.textContent.trim());
+  const map = {
+    'IT': ['Power BI','SQL','SAP','Excel','MS Fabric','Python','Tableau','QlikView','DATEV','Medizincontrolling','DRG','ICD-10 Kodierung','OPS','KIS','Agfa','Orbis','i.s.h.med','Nexus','Cerner','HL7','FHIR','DSGVO'],
+    'Pflege': ['Pflegedokumentation','MDK-Prüfung','Vivendi','DAN','Care4','Medifox','SIS','Pflegeplanung','Altenpflege','Krankenpflege','Wundversorgung','Palliativpflege','Demenzpflege','Beatmungspflege','Intensivpflege','OP-Pflege','Anästhesiepflege','Pflegestandards'],
+    'Medizin': ['ICD-10','OPS','Arztbriefe','Anamnese','Physiotherapie','Ergotherapie','Logopädie','Psychotherapie','Sonographie','EKG','Labordiagnostik','Röntgen','MRT','CT','Notfallmedizin','Chirurgie','Innere Medizin','Verhaltenstherapie'],
+    'Labor': ['LIMS','PCR','Mikrobiologie','Hämatologie','Klinische Chemie','Histologie','Zytologie','Serologie','Blutbank','ISO 15189','MTA','PTA','BTA','Apothekensoftware','ABDA','Warenwirtschaft','Rezepturherstellung','Qualitätskontrolle']
+  };
   let kenntnisse = [];
-  if(fields.some(f=>f.includes('IT')||f.includes('Controlling'))) kenntnisse.push(...['Power BI','SQL','SAP','Excel','MS Fabric','Python','Tableau','QlikView','DATEV','Medizincontrolling','DRG','ICD-10','OPS','KIS','Agfa','Orbis']);
-  if(fields.some(f=>f.includes('Pflege'))) kenntnisse.push(...['Pflegedokumentation','MDK','Vivendi','DAN','Care4','Medifox','SIS','Pflegeplanung','Altenpflege','Krankenpflege','Wundversorgung','Palliativpflege']);
-  if(fields.some(f=>f.includes('Medizin'))) kenntnisse.push(...['ICD-10','OPS','Arztbriefe','Anamnese','Physiotherapie','Ergotherapie','Logopädie','Psychotherapie','Sonographie','EKG','Labordiagnostik']);
-  if(fields.some(f=>f.includes('Labor'))) kenntnisse.push(...['LIMS','PCR','Mikrobiologie','Hämatologie','Klinische Chemie','Histologie','Zytologie','MTA','PTA','BTA','Apothekensoftware','ABDA']);
-  if(kenntnisse.length === 0) kenntnisse = ['Power BI','SQL','SAP','Excel','MS Fabric','Python'];
-  chips.innerHTML = kenntnisse.map((k,i)=>`<div class="fchip${i<2?' on':''}" onclick="tc(this)">${k}</div>`).join('');
+  Object.keys(map).forEach(key => {
+    if(fields.some(f=>f.includes(key)||(key==='IT'&&f.includes('Controlling')))) kenntnisse.push(...map[key]);
+  });
+  if(kenntnisse.length===0) kenntnisse=map['IT'];
+  chips.innerHTML=kenntnisse.map((k,i)=>`<div class="fchip${i<2?' on':''}" onclick="tc(this)">${k}</div>`).join('');
 }
 function loadCandidates(){const list=document.getElementById('candList');list.innerHTML='';const vis=CANDS.filter(c=>!ST.skippedCands.has(c.id));document.getElementById('hCnt').textContent=`${vis.length} gefunden`;vis.forEach(c=>{const card=document.createElement('div');card.className='cand-card'+(ST.contactedCands.has(c.id)?' ok':'');card.id='cc'+c.id;card.innerHTML=`<div class="ct"><div class="cav">${c.ini}</div><div class="cn"><div class="cn-name">${c.name}</div><div class="cn-role">${c.role}</div></div><div class="cs"><div class="cs-pct">${c.score}%</div><div class="cs-lbl">Match</div></div></div><div class="cand-tags">${c.skills.map(s=>`<span class="tag tag-t">${s}</span>`).join('')}${c.langs.map(l=>`<span class="tag tag-i">${l}</span>`).join('')}<span class="tag tag-m">📍${c.city}</span></div><div class="c-bar"><div class="c-fill" style="width:${c.score}%"></div></div><div class="ca"><button class="ca-btn ca-contact" onclick="contactCand(${c.id},'${c.name}')">${ST.contactedCands.has(c.id)?'✓ Kontaktiert':'✉ Kontaktieren'}</button><button class="ca-btn ca-prof" onclick="showCandInfo(${c.id})">Profil →</button><button class="ca-btn ca-skip" onclick="skipCand(${c.id})">✕</button></div>`;list.appendChild(card);});}
 function contactCand(id,name){ST.contactedCands.add(id);addMatch();toast(`✉ Anfrage an ${name} gesendet!`);loadCandidates();}
