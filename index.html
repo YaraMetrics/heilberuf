@@ -628,7 +628,12 @@ footer{background:var(--ink);color:rgba(255,255,255,.4);padding:1.6rem 3rem;disp
               <div class="fchip" onclick="tc(this)">🔬 Labor & MTA</div>
               <div class="fchip" onclick="tc(this)">💻 IT & Controlling</div>
             </div></div>
-            <div class="fg"><label class="flbl">IT-Kenntnisse</label><div class="fchips"><div class="fchip on" onclick="tc(this)">Power BI</div><div class="fchip on" onclick="tc(this)">SQL</div><div class="fchip" onclick="tc(this)">SAP</div><div class="fchip" onclick="tc(this)">Excel</div></div></div>
+            <div class="fg"><label class="flbl">Kenntnisse</label><div class="fchips" id="kenntnisseChips">
+              <div class="fchip on" onclick="tc(this)">Power BI</div>
+              <div class="fchip on" onclick="tc(this)">SQL</div>
+              <div class="fchip" onclick="tc(this)">SAP</div>
+              <div class="fchip" onclick="tc(this)">Excel</div>
+            </div></div>
             <div class="fg"><label class="flbl">Sprachen</label><div class="fchips"><div class="fchip on" onclick="tc(this)">Deutsch C1+</div><div class="fchip" onclick="tc(this)">Englisch</div><div class="fchip" onclick="tc(this)">Arabisch</div></div></div>
             <div class="fg"><label class="flbl">Min. Erfahrung: <b id="expV">2</b> J.</label><div class="frange"><span>0</span><input type="range" min="0" max="10" value="2" oninput="document.getElementById('expV').textContent=this.value"><span>10</span></div></div>
             <button class="btn-search" onclick="loadCandidates()">🔍 Kandidaten suchen</button>
@@ -801,7 +806,27 @@ function renderCards(){const stack=document.getElementById('sStack');stack.inner
 function animateOut(el,dir){const x=dir==='right'?600:dir==='super'?0:-600,y=dir==='super'?-600:0;el.style.transition='transform .4s ease,opacity .4s';el.style.transform=`translateX(${x}px) translateY(${y}px) rotate(${dir==='right'?25:dir==='left'?-25:0}deg)`;el.style.opacity='0';if(dir==='right'||dir==='super'){const allJobs=ST.realJobs&&ST.realJobs.length>0?ST.realJobs:JOBS;const job=allJobs[ST.cardIndex];addMatch();toast(dir==='super'?`⭐ Super Like für ${job?.org}!`:`♥ Match mit ${job?.org}!`);if(job)saveMatch(job);}ST.cardIndex++;setTimeout(renderCards,350);}
 function swipe(dir){const front=document.querySelector('.s-card.front');if(front)animateOut(front,dir);}
 function resetSwipe(){ST.cardIndex=0;renderCards();}
-function tc(el){el.classList.toggle('on');}
+function tc(el){
+  el.classList.toggle('on');
+  // If berufsfeld chip changed, update kenntnisse
+  const berufsChips = el.closest('.fg')?.querySelector('.flbl')?.textContent;
+  if(berufsChips === 'Berufsfeld') updateKenntnisse();
+}
+function updateKenntnisse(){
+  const selected = Array.from(document.querySelectorAll('#kenntnisseChips')?.[0]?.closest('.filter-form')?.querySelectorAll('.fg') || [])
+    .find(fg => fg.querySelector('.flbl')?.textContent === 'Berufsfeld')
+    ?.querySelectorAll('.fchip.on');
+  const fields = Array.from(selected||[]).map(c=>c.textContent.trim());
+  const chips = document.getElementById('kenntnisseChips');
+  if(!chips) return;
+  let kenntnisse = [];
+  if(fields.some(f=>f.includes('IT')||f.includes('Controlling'))) kenntnisse.push(...['Power BI','SQL','SAP','Excel','MS Fabric','Python']);
+  if(fields.some(f=>f.includes('Pflege'))) kenntnisse.push(...['Pflegedokumentation','MDK','Vivendi','DAN']);
+  if(fields.some(f=>f.includes('Medizin'))) kenntnisse.push(...['Arztbriefe','ICD-10','Medizinische Dokumentation']);
+  if(fields.some(f=>f.includes('Labor'))) kenntnisse.push(...['LIMS','Laboranalytik','Mikrobiologie','MTA']);
+  if(kenntnisse.length === 0) kenntnisse = ['Power BI','SQL','SAP','Excel'];
+  chips.innerHTML = kenntnisse.map((k,i)=>`<div class="fchip${i<2?' on':''}" onclick="tc(this)">${k}</div>`).join('');
+}
 function loadCandidates(){const list=document.getElementById('candList');list.innerHTML='';const vis=CANDS.filter(c=>!ST.skippedCands.has(c.id));document.getElementById('hCnt').textContent=`${vis.length} gefunden`;vis.forEach(c=>{const card=document.createElement('div');card.className='cand-card'+(ST.contactedCands.has(c.id)?' ok':'');card.id='cc'+c.id;card.innerHTML=`<div class="ct"><div class="cav">${c.ini}</div><div class="cn"><div class="cn-name">${c.name}</div><div class="cn-role">${c.role}</div></div><div class="cs"><div class="cs-pct">${c.score}%</div><div class="cs-lbl">Match</div></div></div><div class="cand-tags">${c.skills.map(s=>`<span class="tag tag-t">${s}</span>`).join('')}${c.langs.map(l=>`<span class="tag tag-i">${l}</span>`).join('')}<span class="tag tag-m">📍${c.city}</span></div><div class="c-bar"><div class="c-fill" style="width:${c.score}%"></div></div><div class="ca"><button class="ca-btn ca-contact" onclick="contactCand(${c.id},'${c.name}')">${ST.contactedCands.has(c.id)?'✓ Kontaktiert':'✉ Kontaktieren'}</button><button class="ca-btn ca-prof" onclick="showCandInfo(${c.id})">Profil →</button><button class="ca-btn ca-skip" onclick="skipCand(${c.id})">✕</button></div>`;list.appendChild(card);});}
 function contactCand(id,name){ST.contactedCands.add(id);addMatch();toast(`✉ Anfrage an ${name} gesendet!`);loadCandidates();}
 function skipCand(id){ST.skippedCands.add(id);const el=document.getElementById('cc'+id);if(el){el.style.transition='all .3s';el.style.opacity='0';el.style.transform='translateX(-16px)';setTimeout(loadCandidates,300);}}
