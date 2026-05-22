@@ -963,7 +963,7 @@ function renderResults(data){
       <div class="jc-blbl">KI-Übereinstimmung</div>
       <div class="jc-actions">
         <button class="jc-btn jc-like" onclick="likeJob(${j.id})">♥ Merken</button>
-        ${j.url?`<a class="jc-btn jc-apply" href="${j.url}" target="_blank">Bewerben →</a>`:`<button class="jc-btn jc-apply" onclick="navigate('swipe')">Swipe →</button>`}
+        ${(j.url&&j.url.length>10)?`<a class="jc-btn jc-apply" href="${j.url}" target="_blank">Bewerben →</a>`:`<a class="jc-btn jc-apply" href="https://www.google.com/search?q=${encodeURIComponent(j.title+' '+j.org+' Stelle Job')}" target="_blank">Bewerben →</a>`}
         <button class="jc-btn jc-skip" onclick="skipJob(${j.id})">✕</button>
       </div>
     </div>`).join('');
