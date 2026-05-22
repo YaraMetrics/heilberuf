@@ -934,9 +934,18 @@ async function fetchMatches(){
   try{
     const res=await fetch('/api/matching',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cvText:cvContent,keywords,city,umkreis})});
     const result=await res.json();
-    if(result&&result.profile&&result.jobs&&result.jobs.length>0)renderResults(result);
-    else renderResults(fallback(fname));
-  }catch(e){renderResults(fallback(fname));}
+    if(result&&result.profile&&result.jobs&&result.jobs.length>0){
+      renderResults(result);
+    } else {
+      document.getElementById('resCount').textContent = 'Keine passenden Stellen gefunden';
+      document.getElementById('jobListEl').innerHTML = '<div style="text-align:center;padding:3rem 1rem;color:var(--muted)"><div style="font-size:2.5rem;margin-bottom:1rem">🔍</div><div style="font-family:Fraunces,serif;font-size:1.2rem;font-weight:700;color:var(--ink);margin-bottom:.5rem">Keine Ergebnisse gefunden</div><p style="font-size:.85rem;line-height:1.6">Versuchen Sie ein anderes Berufsfeld oder eine andere Stadt.</p></div>';
+    }
+  }catch(e){
+    goStep(4);
+    document.getElementById('resCount').textContent = 'Keine passenden Stellen gefunden';
+    document.getElementById('jobListEl').innerHTML = '<div style="text-align:center;padding:3rem 1rem;color:var(--muted)"><div style="font-size:2.5rem;margin-bottom:1rem">🔍</div><div style="font-family:Fraunces,serif;font-size:1.2rem;font-weight:700;color:var(--ink);margin-bottom:.5rem">Keine Ergebnisse gefunden</div><p style="font-size:.85rem;line-height:1.6">Versuchen Sie ein anderes Berufsfeld oder eine andere Stadt.</p></div>';
+    return;
+  }
   goStep(4);
 }
 function fallback(fname){const y=fname.toLowerCase().includes('yara')||fname.toLowerCase().includes('mohamed');return{profile:{name:y?'Yara Mohamed':'Bewerber/in',mainRole:y?'Data Analyst | Gesundheitswesen':'Fachkraft Gesundheitswesen',skills:y?['Power BI','SQL','Excel','SAP']:['Gesundheitswesen'],languages:y?['Deutsch','Arabisch','Englisch']:['Deutsch']},jobs:JOBS.slice(0,4).map(j=>({...j,matchScore:j.score}))};}
