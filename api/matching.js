@@ -8,12 +8,12 @@ export default async function handler(req, res) {
 
   // Step 1: Fetch jobs
   let rawJobs = [];
-  const searches = (keywords || 'Gesundheitswesen').split(' ').filter(k => k.length > 3).slice(0, 2);
+  const searches = (keywords || 'Gesundheitswesen').split(' ').filter(k => k.length > 3).slice(0, 4);
   if(!searches.length) searches.push('Gesundheitswesen');
 
   for(const kw of searches) {
     try {
-      let url = `https://rest.arbeitsagentur.de/jobboerse/jobsuche-service/pc/v4/jobs?was=${encodeURIComponent(kw)}&size=15`;
+      let url = `https://rest.arbeitsagentur.de/jobboerse/jobsuche-service/pc/v4/jobs?was=${encodeURIComponent(kw)}&size=25`;
       if(city) url += `&wo=${encodeURIComponent(city)}`;
       if(umkreis) url += `&umkreis=${umkreis}`;
       const r = await fetch(url, { headers: { 'X-API-Key': 'jobboerse-jobsuche' } });
@@ -36,7 +36,7 @@ export default async function handler(req, res) {
   rawJobs = rawJobs.filter(j => { if(seen.has(j.title)) return false; seen.add(j.title); return true; });
 
   // Step 2: Fetch job details for top 8 jobs
-  const top8 = rawJobs.slice(0, 8);
+  const top8 = rawJobs.slice(0, 15);
   const jobsWithDetails = await Promise.all(top8.map(async job => {
     if(!job.refnr) return { ...job, description: '' };
     try {
