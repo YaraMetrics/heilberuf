@@ -13,7 +13,7 @@ export default async function handler(req, res) {
 
   for(const kw of searches) {
     try {
-      let url = `https://rest.arbeitsagentur.de/jobboerse/jobsuche-service/pc/v4/jobs?was=${encodeURIComponent(kw)}&size=30`;
+      let url = `https://rest.arbeitsagentur.de/jobboerse/jobsuche-service/pc/v4/jobs?was=${encodeURIComponent(kw)}&size=35`;
       if(city) url += `&wo=${encodeURIComponent(city)}`;
       if(umkreis) url += `&umkreis=${umkreis}`;
       const r = await fetch(url, { headers: { 'X-API-Key': 'jobboerse-jobsuche' } });
@@ -120,7 +120,7 @@ Antworte NUR mit JSON:
     profile = result.profile || profile;
 
     scoredJobs = (result.scores || [])
-      .filter(s => s.score >= 40)
+      .filter(s => s.score >= 20)
       .map(s => {
         const job = jobsWithDetails[s.index];
         if(!job) return null;
