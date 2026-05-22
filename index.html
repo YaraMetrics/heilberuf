@@ -1349,3 +1349,28 @@ init();renderCards();loadCandidates();
 </body>
 </html>
 v2
+<script>
+async function loadMatchesFromDB(){
+  if(!currentUser) return;
+  try {
+    const {data} = await sb.from('saved_jobs').select('*').eq('user_id', currentUser.id);
+    if(!data || !data.length) return;
+    const empty = document.getElementById('matchesEmpty');
+    if(empty) empty.style.display = 'none';
+    data.forEach(job => {
+      const safeId = (job.title||'').replace(/[^a-z0-9]/gi,'_');
+      if(document.getElementById('match-item-'+safeId)) return;
+      const div = document.createElement('div');
+      div.className = 'match-item';
+      div.id = 'match-item-'+safeId;
+      div.innerHTML = `<div class="match-item-title">${job.title}</div><div class="match-item-org">🏥 ${job.org} · 📍 ${job.city||''}</div>`;
+      div.style.cursor = 'pointer';
+      div.onclick = () => window.open(job.url || 'https://www.arbeitsagentur.de', '_blank');
+      document.getElementById('matchesList').appendChild(div);
+    });
+    ST.matchCount = data.length;
+    document.getElementById('navBadge').textContent = `♥ ${data.length} Matches`;
+    document.getElementById('swipeCnt').textContent = `♥ ${data.length} Matches`;
+  } catch(e) { console.error(e); }
+}
+</script>
