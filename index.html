@@ -598,8 +598,8 @@ footer{background:var(--ink);color:rgba(255,255,255,.4);padding:1.6rem 3rem;disp
       </div>
       <div style="background:white;border-radius:16px;padding:1rem 1.3rem;margin-bottom:1rem;border:1px solid var(--border);display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
         <span style="font-size:.78rem;font-weight:700;color:var(--teal);white-space:nowrap">Min. Match:</span>
-        <input type="range" id="matchFilter" min="50" max="95" value="50" style="flex:1;accent-color:var(--teal);min-width:120px" oninput="filterJobs(this.value)">
-        <span style="font-size:.85rem;font-weight:700;color:var(--ink);min-width:40px" id="matchFilterVal">50%+</span>
+        <input type="range" id="matchFilter" min="0" max="100" value="0" style="flex:1;accent-color:var(--teal);min-width:120px" oninput="filterJobs(this.value)">
+        <span style="font-size:.85rem;font-weight:700;color:var(--ink);min-width:40px" id="matchFilterVal">0%+</span>
       </div>
       <div class="prof-bar" id="profBar"></div>
       <div class="res-count" id="resCount"></div>
