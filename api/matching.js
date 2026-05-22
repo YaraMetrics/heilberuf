@@ -25,7 +25,7 @@ export default async function handler(req, res) {
         contract: j.arbeitszeit || 'Vollzeit',
         title: j.titel || 'Stelle',
         refnr: j.refnr || '',
-        url: j.refnr ? `https://www.arbeitsagentur.de/jobsuche/jobdetail/${j.refnr}` : `https://www.arbeitsagentur.de/jobsuche/suche?was=${encodeURIComponent(j.titel||'')}&wo=${encodeURIComponent(j.arbeitsort?.ort||'')}` ,
+        url: j.refnr ? `https://www.arbeitsagentur.de/jobsuche/jobdetail/${j.refnr}` : `https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&was=${encodeURIComponent(j.titel||'')}&wo=${encodeURIComponent(j.arbeitsort?.ort||'')}` ,
         icon: '🏥'
       })));
     } catch(e) {}
