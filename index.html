@@ -1208,6 +1208,29 @@ function setRole(role){selectedRole=role;document.getElementById('role-bew').cla
 async function doLogin(){const email=document.getElementById('loginEmail').value.trim();const password=document.getElementById('loginPassword').value;const err=document.getElementById('loginError');err.classList.remove('show');if(!email||!password){err.textContent='Bitte E-Mail und Passwort eingeben.';err.classList.add('show');return;}const btn=document.querySelector('#page-login .auth-btn');btn.disabled=true;btn.textContent='Wird angemeldet...';const{data,error}=await sb.auth.signInWithPassword({email,password});btn.disabled=false;btn.textContent='Anmelden →';if(error){err.textContent=error.message;err.classList.add('show');return;}await onLogin(data.user);}
 async function doRegister(){const name=document.getElementById('registerName').value.trim();const email=document.getElementById('registerEmail').value.trim();const password=document.getElementById('registerPassword').value;const err=document.getElementById('registerError');const ok=document.getElementById('registerSuccess');err.classList.remove('show');ok.classList.remove('show');if(!name||!email||!password){err.textContent='Bitte alle Felder ausfüllen.';err.classList.add('show');return;}if(password.length<8){err.textContent='Passwort muss mindestens 8 Zeichen haben.';err.classList.add('show');return;}const btn=document.querySelector('#page-register .auth-btn');btn.disabled=true;btn.textContent='Wird registriert...';const{data,error}=await sb.auth.signUp({email,password});btn.disabled=false;btn.textContent='Kostenlos registrieren →';if(error){err.textContent=error.message;err.classList.add('show');return;}if(data.user){await sb.from('profiles').upsert({id:data.user.id,role:selectedRole,name});ok.textContent='✓ Registrierung erfolgreich!';ok.classList.add('show');setTimeout(()=>navigate('login'),2500);}}
 async function doLogout(){await sb.auth.signOut();currentUser=null;updateNav(null);navigate('landing');toast('👋 Erfolgreich abgemeldet');}
+
+async function loadMatchesFromDB(){
+  if(!currentUser) return;
+  try{
+    const {data} = await sb.from('saved_jobs').select('*').eq('user_id',currentUser.id);
+    if(!data||!data.length) return;
+    document.getElementById('matchesEmpty').style.display='none';
+    data.forEach(job=>{
+      const safeId=(job.title||'').replace(/[^a-z0-9]/gi,'_');
+      if(document.getElementById('match-item-'+safeId)) return;
+      const div=document.createElement('div');
+      div.className='match-item';div.id='match-item-'+safeId;
+      div.innerHTML=`<div class="match-item-title">${job.title}</div><div class="match-item-org">🏥 ${job.org} · 📍 ${job.city||''}</div>`;
+      div.style.cursor='pointer';
+      div.onclick=()=>window.open(job.url||'https://www.arbeitsagentur.de','_blank');
+      document.getElementById('matchesList').appendChild(div);
+    });
+    ST.matchCount=data.length;
+    document.getElementById('navBadge').textContent=`♥ ${data.length} Matches`;
+    document.getElementById('swipeCnt').textContent=`♥ ${data.length} Matches`;
+  }catch(e){}
+}
+
 async function onLogin(user){
  currentUser=user;
  updateNav(user);
