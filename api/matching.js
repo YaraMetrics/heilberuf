@@ -62,7 +62,7 @@ LEBENSLAUF:
 ${(cvText||'').substring(0, 1000)}
 
 STELLEN (bewerte 0-100, NUR absolut unmögliche Stellen unter 30):
-${rawJobs.slice(0, 20).map((j,i) => `${i}: ${j.title} | ${j.org}`).join('\n')}
+${rawJobs.slice(0, 30).map((j,i) => `${i}: ${j.title} | ${j.org}`).join('\n')}
 
 Antworte NUR mit JSON:
 {
@@ -94,7 +94,7 @@ Antworte NUR mit JSON:
           tags: aiScore.tags || [job.location, job.contract].filter(Boolean)
         };
       })
-      .filter(j => j && j.matchScore >= 35)
+      .filter(j => j && j.matchScore >= 30)
       .sort((a, b) => b.matchScore - a.matchScore);
 
     return res.status(200).json({ profile, jobs: finalJobs });
