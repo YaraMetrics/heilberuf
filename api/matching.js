@@ -8,8 +8,15 @@ export default async function handler(req, res) {
 
   // Step 1: Fetch ALL jobs
   let rawJobs = [];
-  const searches = (keywords || 'Gesundheitswesen').split(' ').filter(k => k.length > 3).slice(0, 5);
-  if(!searches.length) searches.push('Gesundheitswesen');
+  // Smart keywords based on berufsfeld
+  const rawKeywords = (keywords || 'Gesundheitswesen').split(' ').filter(k => k.length > 3);
+  
+  // Add health-specific terms to ensure relevant results
+  const healthTerms = ['Gesundheitswesen', 'Klinik', 'Krankenhaus', 'Pflege', 'Medizin'];
+  const searches = rawKeywords.length > 0 ? rawKeywords.slice(0, 4) : healthTerms.slice(0, 3);
+  
+  // Always add Gesundheitswesen to keep results medical
+  if(!searches.includes('Gesundheitswesen')) searches.push('Gesundheitswesen');
 
   for(const kw of searches) {
     try {
@@ -75,20 +82,19 @@ Antworte NUR mit JSON:
     const scoreMap = {};
     (result.scores || []).forEach(s => { scoreMap[s.index] = s; });
 
-    // ALL jobs get shown, AI scored ones get better ranking
-    const scoredJobs = rawJobs.map((job, i) => {
-      const aiScore = scoreMap[i];
-      return {
-        ...job,
-        matchScore: aiScore ? aiScore.score : 55,
-        reasons: aiScore ? aiScore.reasons : ['Aktuelle Stelle auf Bundesagentur', 'Passend zu Ihrem Berufsfeld', 'Direkt bewerben möglich'],
-        tags: aiScore ? aiScore.tags : [job.location, job.contract].filter(Boolean)
-      };
-    });
-
-    // Sort by score, show all above 30
-    const finalJobs = scoredJobs
-      .filter(j => j.matchScore >= 30)
+    // Only show jobs that were scored by AI (relevant ones)
+    const finalJobs = rawJobs
+      .map((job, i) => {
+        const aiScore = scoreMap[i];
+        if(!aiScore) return null; // Skip unscored jobs
+        return {
+          ...job,
+          matchScore: aiScore.score,
+          reasons: aiScore.reasons || ['Aktuelle Stelle auf Bundesagentur'],
+          tags: aiScore.tags || [job.location, job.contract].filter(Boolean)
+        };
+      })
+      .filter(j => j && j.matchScore >= 35)
       .sort((a, b) => b.matchScore - a.matchScore);
 
     return res.status(200).json({ profile, jobs: finalJobs });
