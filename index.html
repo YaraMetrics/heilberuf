@@ -1374,3 +1374,29 @@ async function loadMatchesFromDB(){
   } catch(e) { console.error(e); }
 }
 </script>
+<script>
+// Override to save to Supabase
+const _origLikeJob = likeJob;
+function likeJob(id){
+  _origLikeJob(id);
+  if(!currentUser) return;
+  const card = document.getElementById('jcr'+id);
+  if(!card) return;
+  const title = card.querySelector('.jc-title')?.textContent?.trim() || '';
+  const org = card.querySelector('.jc-oname')?.textContent?.trim() || '';
+  const city = card.querySelector('.jc-oloc')?.textContent?.replace('📍','').split('·')[0]?.trim() || '';
+  const url = card.querySelector('a.jc-apply')?.href || '';
+  if(ST.likedJobs.has(id)){
+    sb.from('saved_jobs').upsert({user_id:currentUser.id,title,org,city,url});
+  } else {
+    sb.from('saved_jobs').delete().eq('user_id',currentUser.id).eq('title',title);
+  }
+}
+
+// Load from DB on login
+const _origOnLogin = onLogin;
+async function onLogin(user){
+  await _origOnLogin(user);
+  await loadMatchesFromDB();
+}
+</script>
