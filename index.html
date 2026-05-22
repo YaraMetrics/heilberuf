@@ -524,9 +524,10 @@ footer{background:var(--ink);color:rgba(255,255,255,.4);padding:1.6rem 3rem;disp
     <div class="progress-bar">
       <div class="pb-item"><div class="pb-dot active" id="pb0">1</div><div class="pb-lbl">Berufsfeld</div></div>
       <div class="pb-item"><div class="pb-dot" id="pb1">2</div><div class="pb-lbl">CV Upload</div></div>
-      <div class="pb-item"><div class="pb-dot" id="pb2">3</div><div class="pb-lbl">Standort</div></div>
-      <div class="pb-item"><div class="pb-dot" id="pb3">4</div><div class="pb-lbl">Analyse</div></div>
-      <div class="pb-item"><div class="pb-dot" id="pb4">5</div><div class="pb-lbl">Matches</div></div>
+      <div class="pb-item"><div class="pb-dot" id="pb1b">3</div><div class="pb-lbl">Wunschberufe</div></div>
+      <div class="pb-item"><div class="pb-dot" id="pb2">4</div><div class="pb-lbl">Standort</div></div>
+      <div class="pb-item"><div class="pb-dot" id="pb3">5</div><div class="pb-lbl">Analyse</div></div>
+      <div class="pb-item"><div class="pb-dot" id="pb4">6</div><div class="pb-lbl">Matches</div></div>
     </div>
     <div class="panel active" id="step0">
       <div class="pan-ey">Schritt 1 von 5</div>
@@ -560,9 +561,30 @@ footer{background:var(--ink);color:rgba(255,255,255,.4);padding:1.6rem 3rem;disp
       <label class="consent-row"><input type="checkbox" id="consentChk"><span>Ich stimme der Verarbeitung meiner Qualifikationsdaten für das KI-Matching zu. <a onclick="openModal('dsgvoModal')">Datenschutzerklärung</a></span></label>
       <div style="display:flex;gap:.7rem;margin-top:1.2rem">
         <button class="btn-s" onclick="goStep(0)">← Zurück</button>
-        <button class="btn-p" id="cvBtn" disabled onclick="goStep(2)" style="flex:1;justify-content:center">Weiter → Standort</button>
+        <button class="btn-p" id="cvBtn" disabled onclick="goStep('1b')" style="flex:1;justify-content:center">Weiter → Wunschberufe</button>
       </div>
     </div>
+    <div class="panel" id="step1b">
+      <div class="pan-ey">Schritt 3 von 6</div>
+      <div class="pan-h">Welche Berufe suchen Sie?</div>
+      <p class="pan-sub">Geben Sie bis zu 5 Wunschberufe ein — wir suchen gezielt danach.</p>
+      <div id="wunschTags" style="display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.8rem;min-height:32px"></div>
+      <div style="position:relative;display:flex;gap:.5rem">
+        <input type="text" id="wunschInput" placeholder="z.B. Medizincontrolling, Data Analyst..." 
+          style="flex:1;padding:.7rem 1rem;border:1.5px solid var(--border);border-radius:12px;font-family:inherit;font-size:.88rem;outline:none;transition:border-color .2s"
+          onfocus="this.style.borderColor='var(--teal)'" onblur="this.style.borderColor='var(--border)'"
+          oninput="showWunschSugg(this.value)"
+          onkeydown="if(event.key==='Enter'){event.preventDefault();addWunsch()}">
+        <button onclick="addWunsch()" style="background:var(--teal);color:white;border:none;border-radius:12px;padding:.7rem 1.2rem;font-family:inherit;font-weight:600;cursor:pointer">+ Hinzufügen</button>
+        <div id="wunschSugg" style="position:absolute;top:100%;left:0;right:60px;background:white;border-radius:12px;box-shadow:0 16px 40px rgba(13,27,42,.15);border:1px solid var(--border);z-index:100;display:none;margin-top:4px"></div>
+      </div>
+      <p style="font-size:.75rem;color:var(--muted);margin-top:.6rem">💡 Tipp: Je genauer, desto besser die Ergebnisse</p>
+      <div style="display:flex;gap:.7rem;margin-top:1.5rem">
+        <button class="btn-s" onclick="goStep(1)">← Zurück</button>
+        <button class="btn-p" id="wunschBtn" onclick="goStep(2)" style="flex:1;justify-content:center">Weiter → Standort</button>
+      </div>
+    </div>
+
     <div class="panel" id="step2">
       <div class="pan-ey">Schritt 3 von 5</div>
       <div class="pan-h">Wo möchten Sie arbeiten?</div>
@@ -894,6 +916,53 @@ function goStep(n){
   ['pb0','pb1','pb2','pb3','pb4'].forEach((id,i)=>{const d=document.getElementById(id);if(!d)return;d.className='pb-dot'+(i<n?' done':i===n?' active':'');d.textContent=i<n?'✓':i+1;});
   window.scrollTo(0,0);
 }
+
+const WUNSCH_SUGGESTIONS = ['Medizincontrolling','Data Analyst Gesundheitswesen','BI-Analyst Klinik','Pflegefachkraft','Krankenpflege','Altenpflege','IT-Koordinator Krankenhaus','Qualitätsmanagement','Verwaltung Krankenhaus','Arzt Allgemeinmedizin','Physiotherapeut','Ergotherapeut','Labormedizin','MTA','PTA','Apotheker','Medizinische Dokumentation','Gesundheitsökonom','Prozessmanager Klinik','Controlling Krankenhaus'];
+const wunschList = [];
+
+function addWunsch(){
+  const input = document.getElementById('wunschInput');
+  const val = input.value.trim();
+  if(!val || wunschList.length >= 5) return;
+  if(wunschList.includes(val)) { input.value=''; return; }
+  wunschList.push(val);
+  renderWunschTags();
+  input.value = '';
+  document.getElementById('wunschSugg').style.display = 'none';
+}
+
+function renderWunschTags(){
+  const container = document.getElementById('wunschTags');
+  container.innerHTML = wunschList.map((w,i) => `
+    <div style="display:inline-flex;align-items:center;gap:.35rem;background:var(--teal-pale);border:1.5px solid rgba(14,168,154,.3);border-radius:50px;padding:.3rem .8rem;font-size:.8rem;font-weight:600;color:var(--teal)">
+      ${w}
+      <span onclick="removeWunsch(${i})" style="cursor:pointer;color:var(--teal);font-size:.9rem;line-height:1">✕</span>
+    </div>`).join('');
+  const hint = document.getElementById('wunschInput');
+  if(hint) hint.placeholder = wunschList.length >= 5 ? 'Maximum erreicht (5)' : 'z.B. Medizincontrolling...';
+}
+
+function removeWunsch(i){
+  wunschList.splice(i, 1);
+  renderWunschTags();
+}
+
+function showWunschSugg(val){
+  const box = document.getElementById('wunschSugg');
+  if(!val || val.length < 1){ box.style.display='none'; return; }
+  const matches = WUNSCH_SUGGESTIONS.filter(s => s.toLowerCase().includes(val.toLowerCase())).slice(0, 5);
+  if(!matches.length){ box.style.display='none'; return; }
+  box.innerHTML = matches.map(s => `<div style="padding:.45rem .9rem;cursor:pointer;font-size:.83rem;color:var(--ink);transition:background .15s" onmouseover="this.style.background='var(--teal-pale)'" onmouseout="this.style.background=''" onclick="document.getElementById('wunschInput').value='${s}';document.getElementById('wunschSugg').style.display='none';addWunsch()">${s}</div>`).join('');
+  box.style.display = 'block';
+}
+
+document.addEventListener('click', e => {
+  if(!e.target.closest('#wunschInput') && !e.target.closest('#wunschSugg')){
+    const b = document.getElementById('wunschSugg');
+    if(b) b.style.display = 'none';
+  }
+});
+
 function toggleBF(type,card,keywords){
   if(ST.selectedFields.has(type)){ST.selectedFields.delete(type);card.classList.remove('selected');}
   else{ST.selectedFields.set(type,keywords);card.classList.add('selected');}
