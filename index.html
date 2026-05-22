@@ -963,7 +963,7 @@ function renderResults(data){
       <div class="jc-blbl">KI-Übereinstimmung</div>
       <div class="jc-actions">
         <button class="jc-btn jc-like" onclick="likeJob(${j.id})">♥ Merken</button>
-        ${(j.url&&j.url.length>10)?`<a class="jc-btn jc-apply" href="${j.url}" target="_blank">Bewerben →</a>`:`<a class="jc-btn jc-apply" href="https://www.google.com/search?q=${encodeURIComponent(j.title+' '+j.org+' Stelle Job')}" target="_blank">Bewerben →</a>`}
+        <a class="jc-btn jc-apply" href="${(j.url&&j.url.length>10)?j.url:'#'}" target="_blank" onclick="return applyJob(event,'${j.url||''}','${(j.title||'').replace(/'/g,'').replace(/"/g,'')}','${(j.org||'').replace(/'/g,'').replace(/"/g,'')}')">Bewerben →</a>
         <button class="jc-btn jc-skip" onclick="skipJob(${j.id})">✕</button>
       </div>
     </div>`).join('');
@@ -979,6 +979,18 @@ function filterJobs(val){
     else card.style.display='none';
   });
   document.getElementById('resCount').textContent = visible + ' passende Stellen gefunden';
+}
+
+
+function applyJob(e, url, title, org){
+  if(url && url.length > 10 && url.startsWith('http')){
+    window.open(url, '_blank');
+  } else {
+    const q = encodeURIComponent(title + ' ' + org + ' Stelle Job Deutschland');
+    window.open('https://www.google.com/search?q=' + q, '_blank');
+  }
+  e.preventDefault();
+  return false;
 }
 
 function likeJob(id){const card=document.getElementById('jcr'+id);const job=JOBS.find(j=>j.id===id)||{id,title:'Stelle',org:'Klinik',city:'Ulm',score:80};if(ST.likedJobs.has(id)){ST.likedJobs.delete(id);card.classList.remove('liked');document.getElementById('match-item-'+id)?.remove();}else{
