@@ -13,7 +13,7 @@ export default async function handler(req, res) {
 
   for(const kw of searches) {
     try {
-      let url = `https://rest.arbeitsagentur.de/jobboerse/jobsuche-service/pc/v4/jobs?was=${encodeURIComponent(kw)}&size=10`;
+      let url = `https://rest.arbeitsagentur.de/jobboerse/jobsuche-service/pc/v4/jobs?was=${encodeURIComponent(kw)}&size=15`;
       if(city) url += `&wo=${encodeURIComponent(city)}`;
       if(umkreis) url += `&umkreis=${umkreis}`;
       const r = await fetch(url, { headers: { 'X-API-Key': 'jobboerse-jobsuche' } });
@@ -77,15 +77,17 @@ Beschreibung: ${j.description || 'Nicht verfügbar'}
 `).join('\n')}
 
 BEWERTUNGSREGELN:
-- 85-100%: Qualifikationen passen sehr gut
-- 65-84%: Gute Übereinstimmung
-- 50-64%: Interessante Stelle, könnte passen
-- 0-49%: Eindeutig nicht qualifiziert (z.B. Arzt ohne Medizinstudium) → NICHT anzeigen
+- 75-100%: Sehr gute Übereinstimmung
+- 55-74%: Passend mit kleinen Lücken — ANZEIGEN
+- 45-54%: Quereinsteiger möglich — ANZEIGEN
+- 0-44%: Absolut unmöglich (z.B. Arzt ohne Studium) → NICHT anzeigen
 
-WICHTIG: 
-- Im Zweifel lieber 60% als 0% geben
-- Pflegefachkraft kann NICHT als Arzt/Chirurg/Zahnarzt arbeiten
-- Zeige möglichst viele passende Stellen (Ziel: 8-15 Ergebnisse)
+WICHTIG:
+- Sei GROSSZÜGIG bei der Bewertung — Quereinsteiger sind willkommen
+- Zeige möglichst VIELE Stellen (Ziel: 6-10 Ergebnisse)
+- Pflegeerfahrung zählt auch für verwandte Berufe
+- Soft Skills und Transferwissen berücksichtigen
+- Im Zweifel: ANZEIGEN statt ablehnen
 
 Antworte NUR mit JSON:
 {
@@ -118,7 +120,7 @@ Antworte NUR mit JSON:
     profile = result.profile || profile;
 
     scoredJobs = (result.scores || [])
-      .filter(s => s.score >= 45)
+      .filter(s => s.score >= 40)
       .map(s => {
         const job = jobsWithDetails[s.index];
         if(!job) return null;
