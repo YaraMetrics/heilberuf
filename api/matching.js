@@ -77,15 +77,15 @@ Beschreibung: ${j.description || 'Nicht verfügbar'}
 `).join('\n')}
 
 BEWERTUNGSREGELN:
-- 85-100%: Qualifikationen passen perfekt, Erfahrung ausreichend
-- 65-84%: Gute Übereinstimmung, kleine Lücken
-- 50-64%: Teilweise passend, Weiterbildung nötig
-- 0-49%: Nicht qualifiziert (z.B. Arzt ohne Approbation, Pflege ohne Ausbildung) → NICHT anzeigen
+- 85-100%: Qualifikationen passen sehr gut
+- 65-84%: Gute Übereinstimmung
+- 50-64%: Interessante Stelle, könnte passen
+- 0-49%: Eindeutig nicht qualifiziert (z.B. Arzt ohne Medizinstudium) → NICHT anzeigen
 
 WICHTIG: 
-- Pflegefachkraft kann NICHT als Arzt arbeiten
-- Data Analyst kann NICHT als Chirurg arbeiten  
-- Sei ehrlich und präzise!
+- Im Zweifel lieber 60% als 0% geben
+- Pflegefachkraft kann NICHT als Arzt/Chirurg/Zahnarzt arbeiten
+- Zeige möglichst viele passende Stellen (Ziel: 8-15 Ergebnisse)
 
 Antworte NUR mit JSON:
 {
@@ -118,7 +118,7 @@ Antworte NUR mit JSON:
     profile = result.profile || profile;
 
     scoredJobs = (result.scores || [])
-      .filter(s => s.score >= 50)
+      .filter(s => s.score >= 45)
       .map(s => {
         const job = jobsWithDetails[s.index];
         if(!job) return null;
