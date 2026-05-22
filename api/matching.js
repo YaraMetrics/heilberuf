@@ -6,14 +6,14 @@ export default async function handler(req, res) {
 
   const { cvText, keywords, city, umkreis } = req.body || {};
 
-  // Step 1: Fetch jobs
+  // Step 1: Fetch ALL jobs
   let rawJobs = [];
   const searches = (keywords || 'Gesundheitswesen').split(' ').filter(k => k.length > 3).slice(0, 5);
   if(!searches.length) searches.push('Gesundheitswesen');
 
   for(const kw of searches) {
     try {
-      let url = `https://rest.arbeitsagentur.de/jobboerse/jobsuche-service/pc/v4/jobs?was=${encodeURIComponent(kw)}&size=35`;
+      let url = `https://rest.arbeitsagentur.de/jobboerse/jobsuche-service/pc/v4/jobs?was=${encodeURIComponent(kw)}&size=25`;
       if(city) url += `&wo=${encodeURIComponent(city)}`;
       if(umkreis) url += `&umkreis=${umkreis}`;
       const r = await fetch(url, { headers: { 'X-API-Key': 'jobboerse-jobsuche' } });
@@ -25,7 +25,9 @@ export default async function handler(req, res) {
         contract: j.arbeitszeit || 'Vollzeit',
         title: j.titel || 'Stelle',
         refnr: j.refnr || '',
-        url: j.refnr ? `https://www.arbeitsagentur.de/jobsuche/jobdetail/${j.refnr}` : `https://www.google.com/search?q=${encodeURIComponent((j.titel||'') + ' ' + (j.arbeitgeber||'') + ' Stelle')}`,
+        url: j.refnr 
+          ? `https://www.arbeitsagentur.de/jobsuche/jobdetail/${j.refnr}` 
+          : `https://www.google.com/search?q=${encodeURIComponent((j.titel||'') + ' ' + (j.arbeitgeber||'') + ' Stelle')}`,
         icon: '🏥'
       })));
     } catch(e) {}
@@ -35,80 +37,30 @@ export default async function handler(req, res) {
   const seen = new Set();
   rawJobs = rawJobs.filter(j => { if(seen.has(j.title)) return false; seen.add(j.title); return true; });
 
-  // Step 2: Fetch job details for top 8 jobs
-  const top8 = rawJobs.slice(0, 15);
-  const jobsWithDetails = await Promise.all(top8.map(async job => {
-    if(!job.refnr) return { ...job, description: '' };
-    try {
-      const r = await fetch(
-        `https://rest.arbeitsagentur.de/jobboerse/jobsuche-service/pc/v4/jobdetails/${job.refnr}`,
-        { headers: { 'X-API-Key': 'jobboerse-jobsuche' } }
-      );
-      const d = await r.json();
-      const desc = d.stellenangebot?.stellenbeschreibung || '';
-      return { ...job, description: desc.substring(0, 300) };
-    } catch(e) {
-      return { ...job, description: '' };
-    }
-  }));
-
-  // Step 3: Smart AI matching with full job details
+  // Step 2: AI extracts profile + scores top 20 for ranking only
   let profile = { name: 'Bewerber/in', mainRole: 'Fachkraft', skills: [], languages: ['Deutsch'] };
-  let scoredJobs = [];
-
+  
   try {
     const aiRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.GROQ_API_KEY}` },
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
-        max_tokens: 2500,
+        max_tokens: 1500,
         messages: [{
           role: 'user',
-          content: `Du bist ein präziser Karriereberater im deutschen Gesundheitswesen.
+          content: `Analysiere den Lebenslauf und bewerte die Eignung für diese Stellen.
 
 LEBENSLAUF:
-${(cvText||'').substring(0, 1500)}
+${(cvText||'').substring(0, 1000)}
 
-STELLEN MIT BESCHREIBUNG:
-${jobsWithDetails.map((j,i) => `
-[${i}] ${j.title} | ${j.org} | ${j.location}
-Beschreibung: ${j.description || 'Nicht verfügbar'}
-`).join('\n')}
-
-BEWERTUNGSREGELN:
-- 75-100%: Sehr gute Übereinstimmung
-- 55-74%: Passend mit kleinen Lücken — ANZEIGEN
-- 45-54%: Quereinsteiger möglich — ANZEIGEN
-- 0-44%: Absolut unmöglich (z.B. Arzt ohne Studium) → NICHT anzeigen
-
-WICHTIG:
-- Sei GROSSZÜGIG bei der Bewertung — Quereinsteiger sind willkommen
-- Zeige möglichst VIELE Stellen (Ziel: 6-10 Ergebnisse)
-- Pflegeerfahrung zählt auch für verwandte Berufe
-- Soft Skills und Transferwissen berücksichtigen
-- Im Zweifel: ANZEIGEN statt ablehnen
+STELLEN (bewerte 0-100, NUR absolut unmögliche Stellen unter 30):
+${rawJobs.slice(0, 20).map((j,i) => `${i}: ${j.title} | ${j.org}`).join('\n')}
 
 Antworte NUR mit JSON:
 {
-  "profile": {
-    "name": "Name",
-    "mainRole": "Hauptposition",
-    "skills": ["skill1","skill2","skill3","skill4"],
-    "languages": ["Deutsch"]
-  },
-  "scores": [
-    {
-      "index": 0,
-      "score": 88,
-      "reasons": [
-        "Pflegefachkraft-Ausbildung direkt gefordert",
-        "5 Jahre Erfahrung übertreffen Mindestanforderung",
-        "Standort Stuttgart passt zu Ulm-Region"
-      ],
-      "tags": ["Pflege","Vollzeit","Stuttgart"]
-    }
-  ]
+  "profile": {"name":"Name","mainRole":"Rolle","skills":["s1","s2","s3"],"languages":["Deutsch"]},
+  "scores": [{"index":0,"score":85,"reasons":["Grund1","Grund2","Grund3"],"tags":["tag1","tag2"]}]
 }`
         }],
         response_format: { type: 'json_object' }
@@ -119,30 +71,36 @@ Antworte NUR mit JSON:
     const result = JSON.parse(aiData.choices[0].message.content);
     profile = result.profile || profile;
 
-    scoredJobs = (result.scores || [])
-      .filter(s => s.score >= 20)
-      .map(s => {
-        const job = jobsWithDetails[s.index];
-        if(!job) return null;
-        return {
-          ...job,
-          matchScore: s.score,
-          reasons: s.reasons || ['Passend zu Ihrem Profil'],
-          tags: s.tags || [job.location, job.contract].filter(Boolean)
-        };
-      })
-      .filter(Boolean)
+    // Create score map
+    const scoreMap = {};
+    (result.scores || []).forEach(s => { scoreMap[s.index] = s; });
+
+    // ALL jobs get shown, AI scored ones get better ranking
+    const scoredJobs = rawJobs.map((job, i) => {
+      const aiScore = scoreMap[i];
+      return {
+        ...job,
+        matchScore: aiScore ? aiScore.score : 55,
+        reasons: aiScore ? aiScore.reasons : ['Aktuelle Stelle auf Bundesagentur', 'Passend zu Ihrem Berufsfeld', 'Direkt bewerben möglich'],
+        tags: aiScore ? aiScore.tags : [job.location, job.contract].filter(Boolean)
+      };
+    });
+
+    // Sort by score, show all above 30
+    const finalJobs = scoredJobs
+      .filter(j => j.matchScore >= 30)
       .sort((a, b) => b.matchScore - a.matchScore);
 
+    return res.status(200).json({ profile, jobs: finalJobs });
+
   } catch(e) {
-    // Fallback — real jobs without AI scoring
-    scoredJobs = jobsWithDetails.map((j, i) => ({
+    // Fallback: show all jobs with default score
+    const fallbackJobs = rawJobs.map((j, i) => ({
       ...j,
-      matchScore: Math.max(50, 80 - i * 5),
-      reasons: ['Aktuelle Stelle auf Bundesagentur', 'Prüfen Sie die Anforderungen'],
+      matchScore: Math.max(50, 80 - i * 2),
+      reasons: ['Aktuelle Stelle auf Bundesagentur', 'Passend zu Ihrem Berufsfeld', 'Direkt bewerben möglich'],
       tags: [j.location, j.contract].filter(Boolean)
     }));
+    return res.status(200).json({ profile, jobs: fallbackJobs });
   }
-
-  return res.status(200).json({ profile, jobs: scoredJobs });
 }
