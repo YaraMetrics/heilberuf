@@ -1372,3 +1372,27 @@ init();renderCards();loadCandidates();
 </body>
 </html>
 v2
+<script>
+// Save to Supabase when liking
+const _likeJobOrig = likeJob;
+function likeJob(id){
+  _likeJobOrig(id);
+  setTimeout(async () => {
+    if(!currentUser) return;
+    const card = document.getElementById('jcr'+id);
+    if(!card) return;
+    const title = card.querySelector('.jc-title')?.textContent?.trim()||'';
+    const org = card.querySelector('.jc-oname')?.textContent?.trim()||'';
+    const city = (card.querySelector('.jc-oloc')?.textContent||'').replace('📍','').split('·')[0].trim();
+    const applyBtn = card.querySelector('a.jc-apply');
+    const url = applyBtn?.href||'';
+    if(ST.likedJobs.has(id)){
+      const {error} = await sb.from('saved_jobs').upsert({user_id:currentUser.id,title,org,city,url});
+      if(error) console.error('Save error:',error);
+      else console.log('Saved to DB:',title);
+    } else {
+      await sb.from('saved_jobs').delete().eq('user_id',currentUser.id).eq('title',title);
+    }
+  }, 100);
+}
+</script>
